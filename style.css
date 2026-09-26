@@ -1957,6 +1957,89 @@ body.modal-open {
   line-height: 1.45;
 }
 
+/* Storage Mode Segmented Switch */
+.storage-mode-switch {
+  display: flex;
+  background: var(--bg-primary, #0c1017);
+  border: 1px solid var(--border-color, #1f2937);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.storage-mode-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.storage-mode-btn i,
+.storage-mode-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.storage-mode-btn:hover {
+  color: var(--text-primary, #f8fafc);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.storage-mode-btn.active {
+  color: var(--accent-green, #10b981);
+  background: var(--card-bg, #1e293b);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-color: var(--border-color, #334155);
+}
+
+.storage-mode-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #94a3b8);
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 0.85rem;
+  line-height: 1.4;
+}
+
+.storage-mode-note.cloud-mode {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.storage-mode-note i,
+.storage-mode-note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent-green, #10b981);
+}
+
+.storage-mode-note.cloud-mode i,
+.storage-mode-note.cloud-mode svg {
+  color: var(--accent-blue, #3b82f6);
+}
+
+.supabase-fields-container {
+  margin-top: 0.5rem;
+}
+
 /* Keyboard Shortcuts Grid */
 .shortcuts-grid {
   display: flex;

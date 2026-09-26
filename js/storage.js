@@ -486,29 +486,64 @@ export class StorageManager {
       const raw = localStorage.getItem(SUPABASE_CONFIG_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
+        let storageMode = parsed.storageMode;
+        if (!storageMode) {
+          if (parsed.syncEnabled === false) {
+            storageMode = 'local';
+          } else if (parsed.syncEnabled === true || (parsed.url && parsed.key)) {
+            storageMode = 'cloud';
+          } else {
+            storageMode = 'local';
+          }
+        }
         return {
           url: parsed.url || '',
           key: parsed.key || '',
           boardId: parsed.boardId || '',
           mode: parsed.mode === 'cards' ? 'cards' : 'board',
+          storageMode: storageMode === 'cloud' ? 'cloud' : 'local',
         };
       }
     } catch {
       /* fall through to defaults */
     }
-    return { url: '', key: '', boardId: '', mode: 'board' };
+    return { url: '', key: '', boardId: '', mode: 'board', storageMode: 'local' };
   }
 
   saveSupabaseConfig(config) {
-    // Preserve the existing mode when a caller does not specify one.
+    const prev = this.supabaseConfig || {};
+    let storageMode = config.storageMode;
+    if (!storageMode) {
+      if (config.syncEnabled === false) {
+        storageMode = 'local';
+      } else if (config.syncEnabled === true) {
+        storageMode = 'cloud';
+      } else if (config.url && config.key) {
+        storageMode = 'cloud';
+      } else if (prev.storageMode) {
+        storageMode = prev.storageMode;
+      } else {
+        storageMode = 'local';
+      }
+    }
+
     this.supabaseConfig = {
-      url: (config.url || '').trim(),
-      key: (config.key || '').trim(),
-      boardId: (config.boardId || '').trim(),
+      url: (config.url !== undefined ? config.url : (prev.url || '')).trim(),
+      key: (config.key !== undefined ? config.key : (prev.key || '')).trim(),
+      boardId: (config.boardId !== undefined ? config.boardId : (prev.boardId || '')).trim(),
       mode: config.mode === 'cards' ? 'cards' : 'board',
+      storageMode: storageMode === 'cloud' ? 'cloud' : 'local',
     };
     localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify(this.supabaseConfig));
     this.initSupabase();
+  }
+
+  getStorageMode() {
+    return (this.supabaseConfig && this.supabaseConfig.storageMode === 'cloud') ? 'cloud' : 'local';
+  }
+
+  isCloudEnabled() {
+    return this.getStorageMode() === 'cloud';
   }
 
   // 'board' = whole board as one jsonb blob (legacy, default)
@@ -522,7 +557,7 @@ export class StorageManager {
   }
 
   isConnected() {
-    return !!(this.supabaseClient && this.supabaseConfig.url && this.supabaseConfig.key);
+    return this.isCloudEnabled() && !!(this.supabaseClient && this.supabaseConfig && this.supabaseConfig.url && this.supabaseConfig.key);
   }
 
   getSyncBoardId(targetBoardId = this.activeBoardId) {
@@ -611,6 +646,12 @@ export class StorageManager {
         console.warn('Channel cleanup:', e);
       }
       this.realtimeChannel = null;
+    }
+
+    if (!this.isCloudEnabled()) {
+      this.supabaseClient = null;
+      this.notifyStatus({ online: false, syncing: false, message: 'Local Storage' });
+      return;
     }
 
     if (url && key && window.supabase) {
@@ -1127,6 +1168,7 @@ export class StorageManager {
 
   /** Remember that there is an unsent change for a specific board. */
   enqueueSync(targetBoardId = this.activeBoardId) {
+    if (!this.isCloudEnabled()) return;
     try {
       const raw = localStorage.getItem(PENDING_QUEUE_KEY);
       let queue = {};

@@ -144,31 +144,48 @@
           <p class="notif-hint-text">Assign active days (M, T, W, R, F, S, U) directly on each task card.</p>
         </div>
 
-        <!-- Supabase Cloud Sync -->
+        <!-- Storage & Cloud Sync -->
         <div class="modal-section">
-          <h4><i data-lucide="cloud"></i> Supabase Cloud Sync</h4>
+          <h4><i data-lucide="database"></i> Storage & Cloud Sync</h4>
           <p class="settings-section-hint">
-            Optionally sync to Supabase in real-time. Leave empty to use LocalStorage only.
+            Choose whether to store your tasks purely locally or sync to Supabase Cloud in real-time.
           </p>
 
-          <div class="settings-group">
-            <label for="sb-url">Supabase Project URL</label>
-            <input type="text" id="sb-url" placeholder="https://xyz.supabase.co" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <!-- Storage Mode Toggle Button -->
+          <div class="storage-mode-switch" role="group" aria-label="Storage Mode">
+            <button type="button" id="btn-toggle-local" class="storage-mode-btn active" data-mode="local">
+              <i data-lucide="hard-drive"></i> <span>Local Storage</span>
+            </button>
+            <button type="button" id="btn-toggle-cloud" class="storage-mode-btn" data-mode="cloud">
+              <i data-lucide="cloud"></i> <span>Cloud Sync</span>
+            </button>
           </div>
 
-          <div class="settings-group">
-            <label for="sb-key">Supabase Anon Key</label>
-            <input type="password" id="sb-key" placeholder="eyJhbGciOi..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <div id="storage-mode-desc" class="storage-mode-note">
+            <i data-lucide="shield-check"></i>
+            <span id="storage-mode-desc-text">Local Mode: All tasks and boards are stored strictly on this device. Cloud sync and network calls are disabled.</span>
           </div>
 
-          <div class="settings-group">
-            <label for="sb-board-id">Board Sync ID</label>
-            <input type="text" id="sb-board-id" placeholder="default" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <div id="supabase-config-fields" class="supabase-fields-container hidden">
+            <div class="settings-group">
+              <label for="sb-url">Supabase Project URL</label>
+              <input type="text" id="sb-url" placeholder="https://xyz.supabase.co" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            </div>
+
+            <div class="settings-group">
+              <label for="sb-key">Supabase Anon Key</label>
+              <input type="password" id="sb-key" placeholder="eyJhbGciOi..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            </div>
+
+            <div class="settings-group">
+              <label for="sb-board-id">Board Sync ID</label>
+              <input type="text" id="sb-board-id" placeholder="default" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            </div>
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
             <button type="button" id="btn-save-settings" class="btn-confirm-add" style="flex: 1; min-width: 100px;">
-              <i data-lucide="save"></i> <span>Save</span>
+              <i data-lucide="save"></i> <span>Save Settings</span>
             </button>
             <button type="button" id="btn-show-qr" class="icon-btn" style="flex: 1; min-width: 120px; justify-content: center; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary);" title="Display QR code to scan with your phone camera">
               <i data-lucide="qr-code"></i> <span>Show QR Code</span>

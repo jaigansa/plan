@@ -487,5 +487,67 @@ test('deleteCard permanently removes card, clears from list, and records tombsto
   assert.ok(updated.deletedCardIds.includes('card-test-1'), 'card-test-1 is recorded in deletedCardIds tombstone');
 });
 
+test('StorageManager: toggle between Local and Cloud mode without losing credentials', async () => {
+  const { manager } = await freshStart();
 
+  // Fresh start defaults to local mode
+  assert.equal(manager.getStorageMode(), 'local');
+  assert.equal(manager.isCloudEnabled(), false);
+  assert.equal(manager.supabaseClient, null);
 
+  // Mock global Supabase
+  globalThis.window = globalThis.window || {};
+  globalThis.window.supabase = {
+    createClient: () => ({
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: null, error: null })
+          })
+        })
+      }),
+      channel: () => ({
+        on: () => ({
+          subscribe: (cb) => { if (cb) cb('SUBSCRIBED'); return { unsubscribe: () => {} }; }
+        })
+      }),
+      removeChannel: () => {}
+    })
+  };
+
+  // Configure Supabase in Local mode
+  manager.saveSupabaseConfig({
+    url: 'https://demo.supabase.co',
+    key: 'demo-anon-key',
+    boardId: 'my-board',
+    storageMode: 'local'
+  });
+
+  // Credentials are saved, but cloud sync is inactive
+  const loaded = manager.loadSupabaseConfig();
+  assert.equal(loaded.url, 'https://demo.supabase.co');
+  assert.equal(loaded.key, 'demo-anon-key');
+  assert.equal(loaded.storageMode, 'local');
+  assert.equal(manager.isCloudEnabled(), false);
+  assert.equal(manager.supabaseClient, null);
+
+  // enqueueSync does not queue when in local mode
+  manager.enqueueSync('board-1');
+  assert.equal(manager.hasPendingSync(), false);
+
+  // Switch to Cloud mode
+  manager.saveSupabaseConfig({
+    storageMode: 'cloud'
+  });
+  assert.equal(manager.getStorageMode(), 'cloud');
+  assert.equal(manager.isCloudEnabled(), true);
+  assert.ok(manager.supabaseClient, 'Supabase client initialized in cloud mode');
+
+  // Switch back to Local mode
+  manager.saveSupabaseConfig({
+    storageMode: 'local'
+  });
+  assert.equal(manager.getStorageMode(), 'local');
+  assert.equal(manager.isCloudEnabled(), false);
+  assert.equal(manager.supabaseClient, null, 'Supabase client disconnected in local mode');
+});

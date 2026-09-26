@@ -293,15 +293,56 @@ class KanbanApp {
     const importFileInput = document.getElementById('import-file-input');
     const resetBtn = document.getElementById('btn-reset-board');
 
-    // Supabase cloud sync controls
+    // Storage & Supabase cloud sync controls
+    const btnToggleLocal = document.getElementById('btn-toggle-local');
+    const btnToggleCloud = document.getElementById('btn-toggle-cloud');
+    const storageModeDesc = document.getElementById('storage-mode-desc');
+    const storageModeDescText = document.getElementById('storage-mode-desc-text');
+    const supabaseConfigFields = document.getElementById('supabase-config-fields');
     const sbUrlInput = document.getElementById('sb-url');
     const sbKeyInput = document.getElementById('sb-key');
     const sbBoardIdInput = document.getElementById('sb-board-id');
     const saveCloudBtn = document.getElementById('btn-save-settings');
+    const showQrBtn = document.getElementById('btn-show-qr');
+    const copySyncLinkBtn = document.getElementById('btn-copy-sync-link');
+
+    let currentSelectedMode = 'local';
+
+    const setStorageModeUI = (mode) => {
+      currentSelectedMode = mode === 'cloud' ? 'cloud' : 'local';
+      if (currentSelectedMode === 'cloud') {
+        btnToggleLocal?.classList.remove('active');
+        btnToggleCloud?.classList.add('active');
+        if (storageModeDesc) storageModeDesc.className = 'storage-mode-note cloud-mode';
+        if (storageModeDescText) storageModeDescText.textContent = 'Cloud Mode: Syncs with Supabase in real-time across your devices.';
+        supabaseConfigFields?.classList.remove('hidden');
+        if (showQrBtn) showQrBtn.style.display = '';
+        if (copySyncLinkBtn) copySyncLinkBtn.style.display = '';
+      } else {
+        btnToggleLocal?.classList.add('active');
+        btnToggleCloud?.classList.remove('active');
+        if (storageModeDesc) storageModeDesc.className = 'storage-mode-note';
+        if (storageModeDescText) storageModeDescText.textContent = 'Local Mode: All tasks and boards are stored strictly on this device. Cloud sync and network calls are disabled.';
+        supabaseConfigFields?.classList.add('hidden');
+        if (showQrBtn) showQrBtn.style.display = 'none';
+        if (copySyncLinkBtn) copySyncLinkBtn.style.display = 'none';
+        const syncQrBox = document.getElementById('sync-qr-box');
+        if (syncQrBox) syncQrBox.classList.add('hidden');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    if (btnToggleLocal) {
+      btnToggleLocal.addEventListener('click', () => setStorageModeUI('local'));
+    }
+    if (btnToggleCloud) {
+      btnToggleCloud.addEventListener('click', () => setStorageModeUI('cloud'));
+    }
 
     const populateSettings = () => {
       const config = this.storage.loadSupabaseConfig();
       const currentBoard = this.storage.getData();
+      setStorageModeUI(config.storageMode || 'local');
       if (sbUrlInput) sbUrlInput.value = config.url || '';
       if (sbKeyInput) sbKeyInput.value = config.key || '';
       if (sbBoardIdInput) {
@@ -318,7 +359,6 @@ class KanbanApp {
     ModalHelper.bind(settingsModal, 'btn-open-settings', 'settings-close-btn', populateSettings);
     ModalHelper.bind(settingsModal, 'header-sync-status', null, populateSettings);
 
-    const showQrBtn = document.getElementById('btn-show-qr');
     const hideQrBtn = document.getElementById('btn-hide-qr');
     const syncQrBox = document.getElementById('sync-qr-box');
     const syncQrFrame = document.getElementById('sync-qr-frame');
@@ -397,7 +437,6 @@ class KanbanApp {
       });
     }
 
-    const copySyncLinkBtn = document.getElementById('btn-copy-sync-link');
     const syncCopiedMsg = document.getElementById('sync-link-copied-msg');
     if (copySyncLinkBtn) {
       copySyncLinkBtn.addEventListener('click', async () => {
@@ -453,6 +492,7 @@ class KanbanApp {
           key: sbKeyInput ? sbKeyInput.value : '',
           boardId: boardSyncId,
           mode: 'board',
+          storageMode: currentSelectedMode,
         });
         this.renderBoard();
         ModalHelper.close(settingsModal);
