@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="tui">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>plan - TUI Terminal Todo Manager</title>
+  <!-- Google Fonts: JetBrains Mono for TUI / Terminal aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300ff66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2'/><path d='M8 7v7'/><path d='M12 7v4'/><path d='M16 7v9'/></svg>" />
+  <!-- Supabase CDN (Optional Cloud Sync). Version pinned and SRI-locked: a
+       hijacked or silently changed CDN response is rejected by the browser
+       instead of executing in a page that stores your board. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
+          integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Lucide Icons. Pinned: "latest" could swap the icon set under the app. -->
+  <script src="https://unpkg.com/lucide@1.48.0/dist/umd/lucide.min.js"
+          integrity="sha384-Hh7C333mXel+qppGoFs4qAOXp7h67eur4XsQVF2bvHAM3MQ4DX4cQI7oRCzb98J4"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+
+  <!-- Top App Navigation / Header (Ultra Clean & Minimalist) -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo" title="plan"><i data-lucide="check-circle-2"></i> <span>plan</span></div>
+    </div>
+
+    <div class="header-right">
+      <!-- Settings -->
+      <button id="btn-open-settings" class="icon-btn primary-header-btn" title="Settings & Tools">
+        <i data-lucide="settings"></i> <span>Settings</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Lists Switcher Bar -->
+  <nav class="mobile-list-nav" id="mobile-list-nav" aria-label="Lists Navigation"></nav>
+
+  <!-- Main Kanban Board Container -->
+  <main class="board-container" id="board">
+    <!-- Dynamic lists will be rendered here -->
+    
+    <!-- Add New List Column Action -->
+    <div class="add-list-wrapper" id="add-list-wrapper">
+      <form id="add-list-form" class="add-list-form">
+        <input type="text" id="new-list-title" class="new-list-input" placeholder="+ Add another list... (press Enter)" autocomplete="off" />
+        <button type="submit" id="btn-add-list"><i data-lucide="plus"></i> Add List</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Settings & Tools Modal -->
+  <div class="modal-overlay hidden" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="settings-modal-title"><i data-lucide="settings"></i> Settings & Backup</h3>
+        <button type="button" class="modal-close" id="settings-close-btn" data-modal-close aria-label="Close settings">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Sync Status Indicator Banner -->
+        <div class="settings-status-banner">
+          <div class="settings-status-left">
+            <span id="cloud-status-badge" class="status-badge offline">
+              <i data-lucide="hard-drive"></i> <span class="badge-text">Local Storage</span>
+            </span>
+            <span class="settings-status-hint">Your board is currently stored in this browser.</span>
+          </div>
+        </div>
+
+        <!-- Boards Management Section -->
+        <div class="modal-section" id="settings-boards-section">
+          <h4><i data-lucide="layout-grid"></i> Boards</h4>
+          <p class="settings-section-hint">
+            Switch between your boards, create new ones, or rename/delete the active board.
+          </p>
+          <div class="board-selector-wrapper" id="board-selector-wrapper">
+            <select id="board-select" class="board-select" aria-label="Select Board"></select>
+            <button type="button" id="btn-new-board" class="icon-btn-sm" title="Create New Board" aria-label="Create New Board">
+              <i data-lucide="plus"></i> <span>New</span>
+            </button>
+            <button type="button" id="btn-rename-board" class="icon-btn-sm" title="Rename Board" aria-label="Rename Board">
+              <i data-lucide="pencil"></i> <span>Rename</span>
+            </button>
+            <button type="button" id="btn-del-board" class="icon-btn-sm btn-del-board" title="Delete Current Board" aria-label="Delete Current Board">
+              <i data-lucide="trash-2"></i> <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="modal-section">
+          <h4><i data-lucide="help-circle"></i> Help</h4>
+          <div class="settings-action-grid" style="grid-template-columns: 1fr;">
+            <button type="button" id="btn-shortcuts-help" class="settings-tool-card">
+              <div class="settings-tool-icon"><i data-lucide="keyboard"></i></div>
+              <div class="settings-tool-text">
+                <strong>Shortcuts Guide</strong>
+                <span>Keyboard hotkeys list (<kbd>?</kbd>)</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Notifications Configuration Section -->
+        <div class="modal-section" id="settings-notifications-section">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h4 style="margin: 0;"><i data-lucide="bell"></i> Notifications</h4>
+            <label class="switch-toggle" title="Enable or disable notifications">
+              <input type="checkbox" id="notif-toggle-master" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="notif-status-row">
+            <span class="notif-status-label">Permission:</span>
+            <span class="notif-perm-badge" id="notif-perm-badge">Checking...</span>
+            <button type="button" id="btn-notif-req-perm" class="icon-btn-sm" style="display: none; margin-left: auto;">
+              <i data-lucide="shield-alert"></i> Request Permission
+            </button>
+            <button type="button" id="btn-notif-test" class="icon-btn-sm" style="margin-left: auto;">
+              <i data-lucide="send"></i> Test Alert
+            </button>
+          </div>
+
+          <!-- Fixed Priority Intervals Breakdown -->
+          <div class="notif-intervals-card">
+            <div class="notif-interval-item"><span class="notif-dot red">●</span> <span class="notif-name">Urgent:</span> <span class="notif-time">Every 5 min</span></div>
+            <div class="notif-interval-item"><span class="notif-dot orange">●</span> <span class="notif-name">High:</span> <span class="notif-time">Every 15 min</span></div>
+            <div class="notif-interval-item"><span class="notif-dot yellow">●</span> <span class="notif-name">Medium:</span> <span class="notif-time">Every 30 min</span></div>
+            <div class="notif-interval-item"><span class="notif-dot green">●</span> <span class="notif-name">Low:</span> <span class="notif-time">Every 60 min</span></div>
+            <div class="notif-interval-item notif-disabled-rule"><span class="notif-dot gray">○</span> <span class="notif-name">None:</span> <span class="notif-time">Disabled</span></div>
+          </div>
+          <p class="notif-hint-text">Assign active days (M, T, W, R, F, S, U) directly on each task card.</p>
+        </div>
+
+        <!-- Supabase Cloud Sync -->
+        <div class="modal-section">
+          <h4><i data-lucide="cloud"></i> Supabase Cloud Sync</h4>
+          <p class="settings-section-hint">
+            Optionally sync to Supabase in real-time. Leave empty to use LocalStorage only.
+          </p>
+
+          <div class="settings-group">
+            <label for="sb-url">Supabase Project URL</label>
+            <input type="text" id="sb-url" placeholder="https://xyz.supabase.co" autocomplete="off" />
+          </div>
+
+          <div class="settings-group">
+            <label for="sb-key">Supabase Anon Key</label>
+            <input type="password" id="sb-key" placeholder="eyJhbGciOi..." autocomplete="off" />
+          </div>
+
+          <div class="settings-group">
+            <label for="sb-board-id">Board Sync ID</label>
+            <input type="text" id="sb-board-id" placeholder="default" autocomplete="off" />
+          </div>
+
+          <button type="button" id="btn-save-settings" class="btn-confirm-add">Save Cloud Settings</button>
+        </div>
+
+        <!-- Data Backup & Restore & Exports -->
+        <div class="modal-section">
+          <h4><i data-lucide="file-output"></i> Backup & Export</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+            <button id="btn-export-json" class="icon-btn" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <i data-lucide="download"></i> Export JSON
+            </button>
+
+            <button id="btn-export-csv" class="icon-btn" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <i data-lucide="file-spreadsheet"></i> CSV Spreadsheet
+            </button>
+
+            <label class="icon-btn" style="background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); cursor: pointer;">
+              <i data-lucide="upload"></i> Import JSON
+              <input type="file" id="import-file-input" accept=".json" style="display: none;" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Board Reset -->
+        <div class="modal-section" style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <h4><i data-lucide="alert-triangle"></i> Reset Board</h4>
+          <div style="margin-top: 8px;">
+            <button id="btn-reset-board" class="btn-danger">
+              <i data-lucide="rotate-ccw"></i> Reset Board to Default
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 12px 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background: var(--header-bg);">
+        <button type="button" class="icon-btn primary-header-btn" data-modal-close style="padding: 6px 18px; cursor: pointer;">
+          <i data-lucide="check"></i> <span>Done</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Help Modal -->
+  <div class="modal-overlay hidden" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="shortcuts-modal-title"><i data-lucide="keyboard"></i> Keyboard Shortcuts</h3>
+        <button type="button" class="modal-close" id="shortcuts-close-btn" data-modal-close aria-label="Close shortcuts">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcuts-grid">
+          <div class="shortcut-row"><kbd>n</kbd><span>Focus add todo input</span></div>
+          <div class="shortcut-row"><kbd>?</kbd><span>Show this keyboard shortcuts guide</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Close modal dialog</span></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 12px 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background: var(--header-bg);">
+        <button type="button" class="icon-btn primary-header-btn" data-modal-close style="padding: 6px 18px; cursor: pointer;">
+          <i data-lucide="check"></i> <span>Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Priority Picker (opened by a list's + button once a title is typed) -->
+  <div class="modal-overlay hidden" id="add-card-modal" role="dialog" aria-modal="true" aria-labelledby="add-card-modal-title">
+    <div class="modal-card" style="max-width: 360px;">
+      <div class="modal-header">
+        <h3 id="add-card-modal-title"><i data-lucide="flag"></i> Priority</h3>
+        <button type="button" class="modal-close" id="add-card-close-btn" data-modal-close aria-label="Close priority picker">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-section" style="border: none; margin-bottom: 0; padding: 0;">
+          <p class="settings-hint-text" style="margin-bottom: 10px;">
+            Add &ldquo;<span id="add-card-title-preview"></span>&rdquo; to
+            <strong id="add-card-list-name">&mdash;</strong> with priority:
+          </p>
+          <div class="priority-selector" id="add-card-priority-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reminder rules + IndexedDB access. These are CLASSIC scripts, not modules:
+       the service worker loads the very same files with importScripts(), which
+       is what lets reminders fire while this tab is closed. They must stay
+       before the module below. -->
+  <script src="js/reminder-core.js"></script>
+  <script src="js/plan-store.js"></script>
+
+  <!-- Main JavaScript App Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

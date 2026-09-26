@@ -1,0 +1,3087 @@
+/* ==========================================================================
+   TUI Phosphor Green Todo CSS
+   ========================================================================== */
+
+:root,
+[data-theme="tui"] {
+  --body-bg: #080d09;
+  --header-bg: #040805;
+  --header-border: #143d1f;
+  --header-text: #00ff66;
+  --list-bg: #0a110b;
+  --list-header-color: #00ff66;
+  --card-bg: #040905;
+  --card-text: #b6f3c5;
+  --card-shadow: none;
+  --card-hover-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+  --border-color: #1a4f29;
+  --text-primary: #00ff66;
+  --text-secondary: #00b347;
+  --accent-color: #00ff66;
+  --accent-hover: #33ff85;
+  --modal-overlay: rgba(3, 7, 4, 0.88);
+  --modal-bg: #070e09;
+  --btn-bg: #0f2414;
+  --btn-text: #00ff66;
+  --btn-hover: #193d22;
+  --add-list-bg: #08120a;
+  --add-list-border: #1a4f29;
+  --scrollbar-track: #050a06;
+  --scrollbar-thumb: #144021;
+  --scrollbar-thumb-hover: #00ff66;
+  --tui-glow: 0 0 8px rgba(0, 255, 102, 0.45);
+  --tui-border-active: #00ff66;
+  --tui-dim: #00732e;
+  --tui-font: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+  --tui-bar-height: 28px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--tui-font);
+}
+
+/* Lucide Icon Defaults */
+i[data-lucide], svg.lucide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2;
+}
+
+.search-box i[data-lucide], .search-box svg.lucide {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.icon-btn i[data-lucide], .icon-btn svg.lucide {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.badge i[data-lucide], .badge svg.lucide {
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-right: 3px;
+}
+
+.btn-show-add-card i[data-lucide], .btn-show-add-card svg.lucide,
+#btn-add-list i[data-lucide], #btn-add-list svg.lucide {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.list-delete-btn i[data-lucide], .list-delete-btn svg.lucide {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.status-badge i[data-lucide], .status-badge svg.lucide {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 2px;
+}
+
+.modal-section h4 i[data-lucide], .modal-section h4 svg.lucide {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 4px;
+}
+
+.comment-author i[data-lucide], .comment-author svg.lucide {
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-right: 3px;
+}
+
+.priority-btn i[data-lucide], .priority-btn svg.lucide {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 3px;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background-color: var(--body-bg);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Header */
+.app-header {
+  height: 56px;
+  background: var(--header-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  color: var(--header-text);
+  border-bottom: 1px solid var(--header-border);
+  z-index: 10;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-logo {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.board-title-input {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--header-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.board-title-input:hover, .board-title-input:focus {
+  background: var(--btn-bg);
+  border-color: var(--border-color);
+}
+
+/* Board Selector (Settings Modal) */
+.board-selector-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.board-select {
+  flex: 1 1 180px;
+  min-width: 140px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.icon-btn-sm {
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  color: var(--header-text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.icon-btn-sm:hover:not(:disabled) {
+  background: var(--btn-hover);
+}
+
+.icon-btn-sm:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-del-board:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.history-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Header Center: Search & Filters */
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 580px;
+  margin: 0 1rem;
+}
+
+
+.filter-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: var(--accent-color);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: var(--btn-bg);
+  color: var(--text-secondary);
+}
+.status-badge.online {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.status-badge.offline {
+  background: var(--btn-bg);
+  color: var(--text-secondary);
+}
+
+.icon-btn {
+  background: var(--btn-bg);
+  border: none;
+  color: var(--header-text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: var(--btn-hover);
+}
+
+/* Board Layout */
+.board-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  padding: 1.25rem;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: calc(100vh - 102px);
+}
+
+/* Modern Scrollbar Styling (Horizontal & Vertical) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Specific Container Scrollbars */
+.board-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.board-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.board-container::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 1rem;
+}
+
+.board-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.board-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+.cards-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.cards-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.modal-body::-webkit-scrollbar,
+.search-modal-results-list::-webkit-scrollbar,
+.templates-list-container::-webkit-scrollbar,
+.activity-timeline::-webkit-scrollbar,
+.archive-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.search-modal-results-list::-webkit-scrollbar-thumb,
+.templates-list-container::-webkit-scrollbar-thumb,
+.activity-timeline::-webkit-scrollbar-thumb,
+.archive-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+/* Kanban List / Column */
+.kanban-list {
+  background: var(--list-bg);
+  width: 300px;
+  min-width: 300px;
+  max-height: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, opacity 0.15s;
+  cursor: grab;
+  border: 1px solid var(--border-color);
+}
+
+.kanban-list.list-dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.list-placeholder {
+  width: 300px;
+  min-width: 300px;
+  background: var(--add-list-bg);
+  border: 2px dashed var(--border-color);
+  border-radius: 10px;
+  height: 200px;
+}
+
+.list-header {
+  padding: 10px 14px 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Long-press on the header reorders the list on touch devices.
+     pan-x/pan-y keeps the board horizontally scrollable from this zone. */
+  touch-action: pan-x pan-y;
+  -webkit-touch-callout: none;
+}
+
+.list-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.column-color-indicator-btn {
+  background: transparent;
+  border: none;
+  padding: 3px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.column-color-indicator-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.15);
+}
+
+[data-theme="dark"] .column-color-indicator-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.column-color-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.list-title-input {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--list-header-color);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px;
+  outline: none;
+  width: 80%;
+  cursor: pointer;
+}
+
+.list-title-input:focus {
+  background: var(--card-bg);
+  border-color: var(--accent-color);
+}
+
+.list-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.list-color-picker {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+  outline: none;
+}
+
+.card-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 2px 7px;
+}
+
+.list-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.list-delete-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.list-delete-btn:hover {
+  opacity: 1;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Cloud sync toggle for the whole list (shared-cards sync mode only) */
+.list-share-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.list-share-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.list-share-btn:hover {
+  opacity: 1;
+  color: var(--accent-color);
+  background: var(--btn-hover);
+}
+
+.list-share-btn.shared {
+  opacity: 1;
+  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+/* Cards Container */
+.cards-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 10px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 40px;
+}
+
+/* Kanban Card */
+.kanban-card {
+  background: var(--card-bg);
+  color: var(--card-text);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.kanban-card:hover {
+  box-shadow: var(--card-hover-shadow);
+  transform: translateY(-2px);
+}
+
+.kanban-card > * {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.kanban-card .card-title {
+  padding-top: 8px;
+}
+
+.kanban-card .card-labels {
+  padding-top: 8px;
+}
+
+.kanban-card .card-footer {
+  padding-bottom: 8px;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.95);
+}
+
+/* Quick Add Input Bar at Top of List */
+.list-quick-add {
+  padding: 8px 10px 4px 10px;
+}
+
+.quick-add-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+[data-theme^="tui"] .quick-add-form {
+  border-radius: 0;
+}
+
+.quick-add-form:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.2);
+}
+
+.quick-add-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--card-text);
+  font-size: 0.85rem;
+  outline: none;
+  padding: 4px 6px;
+  min-width: 0;
+}
+
+.quick-add-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.btn-quick-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent-color);
+  color: var(--header-bg);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+/* Kanban List Footer: Days Group Only */
+.kanban-list-footer {
+  margin-top: auto;
+  padding: 6px 10px 8px 10px;
+  border-top: 1px dashed var(--border-color);
+  background: var(--list-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-add-days-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 6px;
+}
+
+.days-footer-label {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.days-footer-label svg {
+  width: 12px;
+  height: 12px;
+  color: var(--accent-color);
+}
+
+.days-chips-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-placeholder {
+  background: rgba(59, 130, 246, 0.08);
+  border: 2px dashed var(--accent-color);
+  border-radius: 8px;
+  min-height: 48px;
+  margin: 2px 0;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+[data-theme="dark"] .card-placeholder {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: #3b82f6;
+}
+
+/* Card Main Row: Drag Grip, Checkbox, Title, Quick Delete */
+.card-main-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.card-drag-grip {
+  color: var(--text-secondary);
+  opacity: 0.35;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.kanban-card:hover .card-drag-grip {
+  opacity: 0.75;
+}
+
+.card-drag-grip svg {
+  width: 15px;
+  height: 15px;
+}
+
+.card-complete-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.card-done-chk {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 0;
+  height: 0;
+}
+
+.card-chk-custom {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.8px solid var(--border-color);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.card-complete-toggle:hover .card-chk-custom {
+  border-color: var(--accent-color);
+}
+
+.card-done-chk:checked + .card-chk-custom {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.card-done-chk:checked + .card-chk-custom::after {
+  content: '';
+  width: 4.5px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-0.5px, -1px);
+}
+
+.card-title {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  word-break: break-word;
+  color: var(--card-text);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.card-title:hover {
+  color: var(--accent-color);
+}
+
+.card-title.completed-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.card-delete-quick-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.65;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.card-delete-quick-btn:hover {
+  opacity: 1;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.card-delete-quick-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Card Metadata Row */
+.card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 8px 33px;
+  font-size: 0.72rem;
+  gap: 6px;
+}
+
+.card-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--tui-font);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.2px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  transition: opacity 0.15s, transform 0.1s, background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.priority-badge:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.priority-badge-none {
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.priority-badge-none:hover {
+  opacity: 1;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Modern Card Progress Bar */
+.card-progress {
+  margin: 8px 0 10px 0;
+  width: 100%;
+}
+
+.card-progress-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .card-progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.35);
+}
+
+.card-progress-fill.complete {
+  background: linear-gradient(90deg, #10b981, #059669);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.4);
+}
+
+/* Modern Card On-Face Checklist */
+.card-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 10px 0;
+}
+
+.card-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--card-text);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+[data-theme="dark"] .card-checklist-item {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.card-checklist-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .card-checklist-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.card-checklist-item.is-done {
+  opacity: 0.65;
+  background: transparent;
+}
+
+.card-checklist-item.is-done .card-chk-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Custom Modern Checkbox Styling */
+.card-chk-box {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.8px solid var(--text-secondary);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-chk-box:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.card-chk-box:checked {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35);
+}
+
+.card-chk-box:checked::after {
+  content: '';
+  position: absolute;
+  width: 4.5px;
+  height: 8.5px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-0.5px, -0.5px);
+}
+
+.card-chk-text {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+.card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Simple Color Dot Circle & Priority Pill (Border removed) */
+.card-priority-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.1px;
+}
+
+[data-theme="dark"] .card-priority-pill {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.color-dot-circle {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Priority Badges */
+.priority-badge {
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.2px;
+}
+.priority-badge-urgent {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.priority-badge-high {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.priority-badge-medium {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+.priority-badge-low {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.checklist-badge.complete {
+  background: #10b981;
+  color: #fff;
+}
+
+/* Due Date Badges */
+.due-badge.overdue {
+  background: #ef4444;
+  color: #fff;
+}
+.due-badge.today {
+  background: #f97316;
+  color: #fff;
+  font-weight: 600;
+}
+.due-badge.tomorrow {
+  background: #eab308;
+  color: #000;
+  font-weight: 600;
+}
+.due-badge.upcoming {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .due-badge.upcoming {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Comment Badge */
+.comment-badge {
+  color: var(--text-secondary);
+}
+
+/* Add Card Composer */
+.add-card-wrapper {
+  padding: 8px 10px;
+}
+
+.btn-show-add-card {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-show-add-card:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--card-text);
+}
+
+[data-theme="dark"] .btn-show-add-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.add-card-form textarea {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--card-text);
+  padding: 8px;
+  font-size: 0.88rem;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.add-card-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-confirm-add {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirm-add:hover {
+  background: var(--accent-hover);
+}
+
+.btn-cancel-add {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+/* Add List Section */
+.add-list-wrapper {
+  min-width: 280px;
+  width: 280px;
+  background: var(--add-list-bg);
+  border: 1px dashed var(--add-list-border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-list-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-list-wrapper input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.add-list-wrapper button {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-list-wrapper button:hover {
+  background: var(--accent-hover);
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modal-overlay.hidden,
+[data-theme^="tui"] .modal-overlay.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.modal-open {
+  overflow: hidden !important;
+}
+
+.modal-card {
+  background: var(--modal-bg);
+  color: var(--text-primary);
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header input {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  width: 90%;
+  outline: none;
+}
+
+.modal-header input:focus {
+  background: var(--card-bg);
+  border-color: var(--accent-color);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modal-section h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.modal-section textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+}
+
+.modal-section input[type="date"] {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+/* Modern Checklist in modal */
+.checklist-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 9px;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .progress-track {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checklist-item:hover {
+  background: var(--btn-hover);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.checklist-item.is-completed {
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.015);
+}
+
+[data-theme="dark"] .checklist-item.is-completed {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.checklist-item.is-completed label {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.checklist-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-secondary);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checklist-item input[type="checkbox"]:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.checklist-item input[type="checkbox"]:checked {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+}
+
+.checklist-item input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 9.5px;
+  border: solid #ffffff;
+  border-width: 0 2.2px 2.2px 0;
+  transform: rotate(45deg) translate(-0.5px, -0.5px);
+}
+
+.checklist-item label {
+  flex: 1;
+  font-size: 0.92rem;
+  cursor: pointer;
+  line-height: 1.35;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.checklist-del-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  opacity: 0.5;
+}
+
+.checklist-item:hover .checklist-del-btn {
+  opacity: 1;
+}
+
+.checklist-del-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.add-checklist-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.add-checklist-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.add-checklist-row button, .add-label-row button {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Labels in modal */
+.labels-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.label-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.label-remove-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.add-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-label-row input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.add-label-row input[type="color"] {
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+}
+
+/* Priority Selector in Modal */
+.priority-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.priority-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.priority-btn:hover {
+  background: var(--btn-hover);
+}
+
+.priority-btn.active {
+  border-color: var(--accent-color);
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  font-weight: 700;
+}
+
+.priority-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+[data-theme^="tui"] .priority-btn {
+  border-radius: 0;
+}
+
+/* Due status in modal */
+.due-status-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.due-status-badge.overdue {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.due-status-badge.today {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+.due-status-badge.tomorrow {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+.due-status-badge.upcoming {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.btn-sm-secondary {
+  background: var(--btn-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* Settings Form */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.settings-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.settings-group input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.settings-group select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.settings-group select:focus {
+  border-color: var(--accent-color);
+}
+
+.settings-section-hint,
+.settings-status-hint {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.45;
+}
+
+.settings-hint-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+  line-height: 1.45;
+}
+
+/* Keyboard Shortcuts Grid */
+.shortcuts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .shortcut-row {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.shortcut-row span {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+kbd {
+  display: inline-block;
+  padding: 3px 6px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  line-height: 1;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings Tool Cards & Action Grid */
+.primary-header-btn {
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+
+.primary-header-btn:hover {
+  background: var(--btn-hover);
+  border-color: var(--accent-color);
+}
+
+.settings-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.settings-status-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.settings-tool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.settings-tool-card:hover {
+  background: var(--btn-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.settings-tool-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--btn-bg);
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.settings-tool-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+}
+
+.settings-tool-text strong {
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Notification Settings in Modal
+   ========================================================================== */
+.switch-toggle {
+  position: relative;
+  display: inline-block;
+  width: 38px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.switch-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  background-color: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.switch-toggle input:checked + .switch-slider {
+  background-color: rgba(0, 255, 102, 0.15);
+  border-color: var(--accent-color);
+}
+
+.switch-toggle input:checked + .switch-slider::before {
+  transform: translateX(18px);
+  background-color: var(--accent-color);
+  box-shadow: 0 0 6px var(--accent-color);
+}
+
+.notif-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px 0;
+  font-size: 0.8rem;
+}
+
+.notif-status-label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.notif-perm-badge {
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  text-transform: uppercase;
+}
+
+.notif-perm-badge.granted {
+  border-color: #00ff66;
+  color: #00ff66;
+  background: rgba(0, 255, 102, 0.1);
+}
+
+.notif-perm-badge.denied {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.notif-perm-badge.default {
+  border-color: #eab308;
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.icon-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.icon-btn-sm:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: var(--btn-hover);
+}
+
+.notif-intervals-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.notif-interval-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--text-primary);
+}
+
+.notif-dot {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.notif-dot.red { color: #ef4444; }
+.notif-dot.orange { color: #f97316; }
+.notif-dot.yellow { color: #eab308; }
+.notif-dot.green { color: #10b981; }
+.notif-dot.gray { color: var(--text-secondary); }
+
+.notif-name {
+  font-weight: 700;
+  width: 65px;
+}
+
+.notif-time {
+  color: var(--text-secondary);
+}
+
+.notif-disabled-rule {
+  opacity: 0.65;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.notif-hint-text {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   Multi-Day Selector Chips (Used in Kanban List Footer Quick-Add)
+   ========================================================================== */
+
+.day-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  min-height: 25px;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--tui-dim);
+  font-family: var(--tui-font);
+  font-size: 0.70rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+[data-theme^="tui"] .day-chip {
+  border-radius: 0;
+}
+
+.day-chip:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(0, 255, 102, 0.1);
+  transform: translateY(-1px);
+}
+
+.day-chip:active {
+  transform: scale(0.92);
+}
+
+.day-chip.active {
+  border-color: var(--accent-color);
+  color: #030704;
+  background: var(--accent-color);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.45), inset 0 0 2px rgba(255, 255, 255, 0.3);
+  font-weight: 800;
+}
+
+[data-theme="tui-amber"] .day-chip.active {
+  color: #0d0800;
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
+}
+
+/* View Switcher (Board vs Calendar) */
+.view-switcher {
+  display: flex;
+  align-items: center;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.view-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-tab-btn.active {
+  background: var(--card-bg);
+  color: var(--accent-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Touch Drag and Drop Mobile Styles */
+.touch-drag-clone {
+  pointer-events: none !important;
+  user-select: none !important;
+  z-index: 99999 !important;
+  cursor: grabbing !important;
+  box-sizing: border-box !important;
+}
+
+.kanban-card {
+  touch-action: pan-x pan-y;
+  -webkit-touch-callout: none;
+}
+
+/* Utilities */
+.hidden {
+  display: none !important;
+}
+
+/* Modern Color Palette Popover Platter */
+.modern-color-palette-popover {
+  position: fixed;
+  z-index: 100000;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  width: 210px;
+  animation: popoverFadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.palette-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.palette-swatches-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.palette-swatch-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  outline: none;
+}
+
+.palette-swatch-btn:hover {
+  transform: scale(1.18);
+  border-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.palette-custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.palette-native-input {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+  outline: none;
+}
+
+/* ==========================================================================
+   TUI (Terminal User Interface) UI/UX Design System
+   ========================================================================== */
+
+/* Universal Monospace & Typography for TUI */
+[data-theme^="tui"],
+[data-theme^="tui"] body,
+[data-theme^="tui"] button,
+[data-theme^="tui"] input,
+[data-theme^="tui"] select,
+[data-theme^="tui"] textarea,
+[data-theme^="tui"] kbd,
+[data-theme^="tui"] .app-header,
+[data-theme^="tui"] .kanban-list,
+[data-theme^="tui"] .kanban-card,
+[data-theme^="tui"] .modal-card,
+[data-theme^="tui"] .tui-status-bar {
+  font-family: var(--tui-font) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sharp boxy aesthetic: zero out border-radius */
+[data-theme^="tui"] *,
+[data-theme^="tui"] *::before,
+[data-theme^="tui"] *::after {
+  border-radius: 0 !important;
+}
+
+/* Subtle phosphor glow on headings and main titles */
+[data-theme="tui"] .app-logo,
+[data-theme="tui"] .list-title,
+[data-theme="tui"] .modal-header h3,
+[data-theme="tui"] .tui-mode-tag {
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+
+[data-theme="tui-amber"] .app-logo,
+[data-theme="tui-amber"] .list-title,
+[data-theme="tui-amber"] .modal-header h3,
+[data-theme="tui-amber"] .tui-mode-tag {
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
+}
+
+/* Terminal App Header */
+[data-theme^="tui"] .app-header {
+  border-bottom: 2px solid var(--border-color);
+  background: var(--header-bg);
+}
+
+[data-theme^="tui"] .app-logo::before {
+  content: ">_ ";
+  font-weight: 800;
+  color: var(--accent-color);
+}
+
+[data-theme^="tui"] .board-title-input {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  padding: 4px 10px;
+}
+
+[data-theme^="tui"] .board-title-input:focus {
+  border-color: var(--tui-border-active);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* View switcher (Board / Calendar) */
+[data-theme^="tui"] .view-switcher {
+  border: 1px solid var(--border-color);
+  background: var(--header-bg);
+  padding: 2px;
+  gap: 2px;
+}
+
+[data-theme^="tui"] .view-tab-btn {
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+}
+
+[data-theme^="tui"] .view-tab-btn.active {
+  background: var(--btn-bg);
+  border-color: var(--tui-border-active);
+  color: var(--text-primary);
+}
+
+/* Header & General Buttons in TUI */
+[data-theme^="tui"] .icon-btn,
+[data-theme^="tui"] .icon-btn-sm,
+[data-theme^="tui"] .primary-header-btn,
+[data-theme^="tui"] .btn-show-add-card,
+[data-theme^="tui"] #btn-add-list {
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
+}
+
+[data-theme^="tui"] .icon-btn:hover,
+[data-theme^="tui"] .icon-btn-sm:hover,
+[data-theme^="tui"] .btn-show-add-card:hover,
+[data-theme^="tui"] #btn-add-list:hover {
+  background: var(--btn-hover);
+  border-color: var(--tui-border-active);
+  box-shadow: var(--card-hover-shadow);
+  color: var(--text-primary);
+}
+
+/* Terminal Kanban Lists & Columns */
+[data-theme^="tui"] .board-container {
+  height: calc(100vh - 56px - var(--tui-bar-height, 28px));
+  padding: 1rem;
+}
+
+[data-theme^="tui"] .calendar-container {
+  height: calc(100vh - 56px - var(--tui-bar-height, 28px));
+}
+
+[data-theme^="tui"] .kanban-list {
+  border: 1px solid var(--border-color);
+  background: var(--list-bg);
+  box-shadow: none;
+}
+
+[data-theme^="tui"] .list-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+[data-theme^="tui"] .list-title {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 0.88rem;
+}
+
+[data-theme^="tui"] .list-card-count {
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  font-weight: 700;
+}
+
+/* Terminal Cards */
+[data-theme^="tui"] .kanban-card {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  box-shadow: none;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+[data-theme^="tui"] .kanban-card:hover {
+  border-color: var(--tui-border-active);
+  box-shadow: var(--card-hover-shadow);
+  transform: none;
+}
+
+/* Card Priority Border Colors (replaces priority pill) */
+.kanban-card.priority-urgent,
+[data-theme^="tui"] .kanban-card.priority-urgent {
+  border-color: #ef4444;
+}
+
+.kanban-card.priority-high,
+[data-theme^="tui"] .kanban-card.priority-high {
+  border-color: #f97316;
+}
+
+.kanban-card.priority-medium,
+[data-theme^="tui"] .kanban-card.priority-medium {
+  border-color: #eab308;
+}
+
+.kanban-card.priority-low,
+[data-theme^="tui"] .kanban-card.priority-low {
+  border-color: #10b981;
+}
+
+.kanban-card.priority-none,
+[data-theme^="tui"] .kanban-card.priority-none {
+  border-color: var(--border-color);
+}
+
+/* Priority Hover States with subtle phosphor glow */
+.kanban-card.priority-urgent:hover,
+[data-theme^="tui"] .kanban-card.priority-urgent:hover {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
+}
+
+.kanban-card.priority-high:hover,
+[data-theme^="tui"] .kanban-card.priority-high:hover {
+  border-color: #fb923c;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.45);
+}
+
+.kanban-card.priority-medium:hover,
+[data-theme^="tui"] .kanban-card.priority-medium:hover {
+  border-color: #facc15;
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.45);
+}
+
+.kanban-card.priority-low:hover,
+[data-theme^="tui"] .kanban-card.priority-low:hover {
+  border-color: #34d399;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+
+[data-theme^="tui"] .card-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+
+[data-theme^="tui"] .card-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border-color);
+  padding-left: 8px;
+  margin-top: 6px;
+}
+
+/* Terminal Badges (Priority, Labels, Due, Checklist) */
+[data-theme^="tui"] .card-priority-pill {
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+}
+
+[data-theme^="tui"] .card-priority-pill .color-dot-circle {
+  border-radius: 0 !important;
+  width: 6px;
+  height: 6px;
+}
+
+[data-theme^="tui"] .card-label-badge {
+  border: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 6px;
+}
+
+[data-theme^="tui"] .badge {
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+[data-theme^="tui"] .badge.due-badge.overdue {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+[data-theme^="tui"] .badge.due-badge.due-soon {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+[data-theme^="tui"] .badge.checklist-badge.complete {
+  border-color: var(--tui-border-active);
+  color: var(--tui-border-active);
+}
+
+/* Card Progress Meter */
+[data-theme^="tui"] .card-progress-bar {
+  border: 1px solid var(--border-color);
+  background: var(--header-bg);
+  height: 6px;
+}
+
+[data-theme^="tui"] .card-progress-fill {
+  background: var(--accent-color);
+}
+
+/* TUI Checklist Item Checkboxes */
+[data-theme^="tui"] .card-checklist-item {
+  border-top: 1px dashed var(--border-color);
+  padding: 4px 0;
+}
+
+[data-theme^="tui"] .card-chk-box,
+[data-theme^="tui"] .checklist-chk {
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* Add List column wrapper */
+[data-theme^="tui"] .add-list-wrapper {
+  border: 1px dashed var(--border-color);
+  background: var(--add-list-bg);
+  box-shadow: none;
+}
+
+[data-theme^="tui"] .add-list-wrapper input {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+[data-theme^="tui"] .add-list-wrapper input:focus {
+  border-color: var(--tui-border-active);
+}
+
+/* Terminal Modals & Dialogs */
+[data-theme^="tui"] .modal-overlay {
+  background: var(--modal-overlay);
+  backdrop-filter: blur(2px);
+}
+
+[data-theme^="tui"] .modal-card {
+  border: 2px solid var(--tui-border-active);
+  background: var(--modal-bg);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.95), var(--card-hover-shadow);
+}
+
+[data-theme^="tui"] .modal-header {
+  border-bottom: 1px dashed var(--border-color);
+  padding: 12px 18px;
+}
+
+[data-theme^="tui"] .modal-header h3 {
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+[data-theme^="tui"] .modal-header h3::before {
+  content: "[ ";
+  color: var(--text-secondary);
+}
+
+[data-theme^="tui"] .modal-header h3::after {
+  content: " ]";
+  color: var(--text-secondary);
+}
+
+[data-theme^="tui"] .modal-close {
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+[data-theme^="tui"] .modal-close:hover {
+  background: var(--accent-color);
+  color: #000;
+  border-color: var(--accent-color);
+}
+
+[data-theme^="tui"] .modal-footer {
+  border-top: 1px dashed var(--border-color);
+  padding: 12px 18px;
+}
+
+[data-theme^="tui"] .settings-tool-card {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  box-shadow: none;
+}
+
+[data-theme^="tui"] .settings-tool-card:hover {
+  border-color: var(--tui-border-active);
+  box-shadow: var(--card-hover-shadow);
+}
+
+[data-theme^="tui"] .shortcuts-grid .shortcut-row {
+  border-bottom: 1px dotted var(--border-color);
+  padding: 6px 0;
+}
+
+[data-theme^="tui"] kbd {
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+/* Fuzzy Finder / Search Modal */
+[data-theme^="tui"] .search-modal-box {
+  border: 2px solid var(--tui-border-active);
+  background: var(--modal-bg);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.95), var(--card-hover-shadow);
+}
+
+[data-theme^="tui"] .search-modal-input-row {
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme^="tui"] .search-modal-input-row input {
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+[data-theme^="tui"] .search-result-card {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  margin-bottom: 6px;
+}
+
+[data-theme^="tui"] .search-result-card:hover {
+  border-color: var(--tui-border-active);
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* TUI Overrides for Quick Add & Todo Entries */
+[data-theme^="tui"] .quick-add-form {
+  border: 1px dashed var(--border-color);
+  background: var(--card-bg);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+[data-theme^="tui"] .quick-add-form:focus-within {
+  border-color: var(--tui-border-active);
+  border-style: solid;
+  box-shadow: none;
+}
+
+[data-theme^="tui"] .btn-quick-add {
+  border-radius: 0;
+  background: var(--accent-color);
+  color: var(--header-bg);
+  font-weight: 700;
+}
+
+[data-theme^="tui"] .card-chk-custom {
+  border-radius: 0;
+  border: 1px solid var(--border-color);
+}
+
+[data-theme^="tui"] .card-done-chk:checked + .card-chk-custom {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+[data-theme^="tui"] .card-done-chk:checked + .card-chk-custom::after {
+  border-color: var(--header-bg);
+}
+
+[data-theme^="tui"] .card-delete-quick-btn {
+  border-radius: 0;
+}
+
+/* ==========================================================================
+   List Navigation Switcher (Desktop & Mobile)
+   ========================================================================== */
+.mobile-list-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 1.25rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: rgba(4, 9, 5, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  scrollbar-width: none;
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-list-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  background: rgba(12, 22, 14, 0.7);
+  color: var(--text-secondary);
+  font-family: var(--tui-font);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1;
+}
+
+[data-theme^="tui"] .mobile-nav-pill {
+  border-radius: 0;
+}
+
+.mobile-nav-pill:hover {
+  border-color: rgba(0, 255, 102, 0.6);
+  color: var(--text-primary);
+  background: rgba(0, 255, 102, 0.08);
+  transform: translateY(-1px);
+}
+
+.mobile-nav-pill:active {
+  transform: scale(0.96);
+}
+
+.mobile-nav-pill.active {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(0, 255, 102, 0.16);
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.3), inset 0 -2px 0 var(--accent-color);
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
+}
+
+/* Held pill: lifted out of the bar while the list order follows the finger.
+   Declared after :hover/:active so it wins while the finger stays down. */
+.mobile-nav-pill.pill-dragging {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(0, 255, 102, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px) scale(1.04);
+  cursor: grabbing;
+  position: relative;
+  z-index: 2;
+}
+
+.mobile-nav-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.mobile-nav-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--tui-font);
+  padding: 1px 6px;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme^="tui"] .mobile-nav-count {
+  border-radius: 0;
+}
+
+.mobile-nav-pill:hover .mobile-nav-count {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.mobile-nav-pill.active .mobile-nav-count {
+  background: var(--accent-color);
+  color: #030704;
+  border-color: var(--accent-color);
+  font-weight: 800;
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+
+/* ==========================================================================
+   Mobile UI/UX Enhancements (max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  html, body {
+    height: 100%;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* Compact Header */
+  .app-header {
+    height: 48px;
+    padding: 0 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .app-logo {
+    font-size: 1.05rem;
+    gap: 0.35rem;
+  }
+
+  .primary-header-btn {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+  }
+
+  /* Mobile List Switcher Pill Bar Overrides */
+  .mobile-list-nav {
+    padding: 8px 10px;
+    top: 48px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .mobile-list-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-nav-pill {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    min-height: 32px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-count {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  /* Vertical Stacked Kanban Board Container on Mobile */
+  .board-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 0.65rem 2.5rem 0.65rem;
+    gap: 1.25rem;
+    height: calc(100vh - 92px);
+    height: calc(100dvh - 92px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Full width mobile card columns stacked vertically */
+  .kanban-list {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: none;
+    scroll-margin-top: 104px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Match the stacked full-width columns instead of the 300px desktop rail */
+  .list-placeholder {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 120px;
+    border-radius: 10px;
+  }
+
+  .add-list-wrapper {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: fit-content;
+    margin-top: 0.25rem;
+  }
+
+  /* List Header */
+  .list-header {
+    padding: 10px 10px 8px 10px;
+  }
+
+  .list-title-input {
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom on input focus */
+    font-weight: 700;
+  }
+
+  .list-delete-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Cards Container on Mobile expands naturally without nested scroll trap */
+  .cards-container {
+    padding: 4px 8px 8px 8px;
+    gap: 8px;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Touch-optimized Kanban Card */
+  .kanban-card,
+  [data-theme^="tui"] .kanban-card {
+    padding: 10px 10px;
+    margin-bottom: 6px;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .kanban-card:active {
+    transform: scale(0.985);
+  }
+
+  .card-main-row {
+    padding: 2px 0;
+    gap: 10px;
+  }
+
+  /* Larger touch target for completion toggle checkbox */
+  .card-complete-toggle {
+    padding: 6px;
+    margin: -6px 0 -6px -2px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card-chk-custom,
+  [data-theme^="tui"] .card-chk-custom {
+    width: 20px;
+    height: 20px;
+  }
+
+  .card-title {
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  /* Delete button is always visible and easy to tap on mobile touchscreens */
+  .card-delete-quick-btn {
+    padding: 6px;
+    margin: -4px -2px -4px 0;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card-delete-quick-btn:active {
+    opacity: 1;
+    color: #ef4444;
+  }
+
+  /* The grip stays visible on mobile so card layout matches desktop. Card
+     reordering itself is done from the pill bar, so the handle is not a drag
+     target here. Touch has no hover, so raise the resting opacity a little. */
+  .card-drag-grip {
+    display: flex;
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .card-drag-grip svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Quick Add Bar */
+  .list-quick-add {
+    padding: 6px 8px 6px 8px;
+  }
+
+  .quick-add-form {
+    padding: 5px 6px;
+    gap: 6px;
+  }
+
+  .quick-add-input,
+  .new-list-input {
+    font-size: 16px !important; /* Prevents iOS viewport auto-zoom */
+    padding: 4px 4px;
+  }
+
+  .btn-quick-add {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .kanban-list-footer {
+    padding: 6px 8px 8px 8px;
+  }
+
+  .quick-add-days-group .day-chip {
+    width: 27px;
+    height: 27px;
+    min-width: 27px;
+    min-height: 27px;
+    font-size: 0.72rem;
+  }
+
+  /* Modals on Mobile */
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+
+  /* Add Todo modal: bigger touch targets for priority choices */
+  #add-card-modal .priority-btn {
+    min-height: 34px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: 88dvh;
+    border-radius: 6px;
+  }
+
+  .modal-header {
+    padding: 12px 14px;
+  }
+
+  .modal-close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .modal-body {
+    padding: 14px;
+    max-height: calc(88dvh - 60px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-section {
+    margin-bottom: 16px;
+  }
+
+  /* Hide CRT scanlines on mobile for battery and rendering performance */
+  .tui-crt-lines {
+    display: none !important;
+  }
+}
+
+

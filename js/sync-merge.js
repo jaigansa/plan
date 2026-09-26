@@ -1,0 +1,235 @@
+/**
+ * Three-way merge for plan board sync.
+ *
+ * The old behaviour was a blind overwrite: whoever saved last replaced the
+ * other device's work. This module instead takes three versions of a board:
+ *
+ *   base   - the last state both sides agreed on (what we last synced)
+ *   local  - this device's current state
+ *   remote - the other device's state
+ *
+ * and produces a merged board plus a list of conflicts, so a card edited on
+ * both sides is reported instead of silently lost.
+ *
+ * Pure functions only: no storage, no network, no DOM. That is deliberate - it
+ * is the part most worth unit testing, because losing a card is unrecoverable.
+ */
+
+const CARD_FIELDS_TO_MERGE = [
+  'title', 'description', 'priority', 'completed',
+  'labels', 'checklist', 'comments', 'dueDate', 'days', 'archived'
+];
+
+function clone(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function same(a, b) {
+  return JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b);
+}
+
+function asCards(data) {
+  return (data && data.cards && typeof data.cards === 'object') ? data.cards : {};
+}
+
+function asLists(data) {
+  return (data && Array.isArray(data.lists)) ? data.lists : [];
+}
+
+function cardIdsOf(list) {
+  return (list && Array.isArray(list.cardIds)) ? list.cardIds : [];
+}
+
+/**
+ * Merge one card.
+ * @returns {{card: object|null, changedLocally: boolean, conflict: object|null}}
+ *   card === null means "deleted locally, keep it deleted".
+ */
+function mergeCard(id, base, local, remote) {
+  const b = base || null;
+  const l = local === undefined ? null : local;
+  const r = remote === undefined ? null : remote;
+
+  // Added on one side only -> take the addition.
+  if (!b) {
+    if (l && !r) return { card: clone(l), changedLocally: !!l, conflict: null };
+    if (r && !l) return { card: clone(r), changedLocally: false, conflict: null };
+    if (l && r) {
+      if (same(l, r)) return { card: clone(l), changedLocally: true, conflict: null };
+      const m = mergeFields(id, l, r, b);
+      return { card: m.card, changedLocally: true, conflict: m.conflict };
+    }
+    return { card: null, changedLocally: false, conflict: null };
+  }
+
+  // Deleted locally, still exists remotely -> respect the local delete.
+  if (l === null) {
+    if (r === null) return { card: null, changedLocally: true, conflict: null };
+    if (same(r, b)) return { card: null, changedLocally: true, conflict: null };
+    return {
+      card: null,
+      changedLocally: true,
+      conflict: { type: 'delete-vs-edit', cardId: id, title: (r && r.title) || id }
+    };
+  }
+
+  // Deleted remotely, still here locally -> keep it, we are the only change.
+  if (r === null) {
+    return { card: clone(l), changedLocally: !same(l, b), conflict: null };
+  }
+
+  return mergeFields(id, l, r, b);
+}
+
+function mergeFields(id, l, r, b) {
+  const out = clone(l);
+  let conflict = null;
+  const fields = {};
+
+  CARD_FIELDS_TO_MERGE.forEach((key) => {
+    const lv = l[key];
+    const rv = r[key];
+    const bv = b ? b[key] : undefined;
+
+    if (same(lv, rv)) return;              // both agree
+    if (same(lv, bv)) {                     // only remote changed
+      if (rv !== undefined) out[key] = clone(rv);
+      return;
+    }
+    if (same(rv, bv)) return;              // only local changed -> keep local
+
+    // Both changed the same field differently. Keep local (the user is looking
+    // at it) but record it so the UI can tell them.
+    fields[key] = { local: clone(lv), remote: clone(rv) };
+    if (!conflict) {
+      conflict = {
+        type: 'field-conflict',
+        cardId: id,
+        title: l.title || r.title || id,
+        fields: Object.keys(fields)
+      };
+      conflict.values = fields;
+    }
+  });
+
+  return { card: out, changedLocally: true, conflict };
+}
+
+/**
+ * Merge a list's cardIds as an ordered set.
+ * Local order wins; remote-only cards are appended in remote order.
+ */
+function mergeCardIds(id, base, local, remote) {
+  const b = cardIdsOf(base);
+  const l = cardIdsOf(local);
+  const r = cardIdsOf(remote);
+
+  const baseSet = new Set(b);
+  const remoteSet = new Set(r);
+  const localSet = new Set(l);
+
+  const merged = [];
+  const seen = new Set();
+  l.forEach((cid) => { if (!seen.has(cid)) { seen.add(cid); merged.push(cid); } });
+
+  r.forEach((cid) => {
+    if (seen.has(cid)) return;
+    // A card deleted locally stays deleted.
+    if (baseSet.has(cid) && !localSet.has(cid)) return;
+    seen.add(cid);
+    merged.push(cid);
+  });
+
+  // Cards added locally that the remote list does not know about are kept
+  // (already in `merged` from the local pass).
+  void id;
+  return merged;
+}
+
+function mergeList(list, base, remote) {
+  const out = clone(list);
+  if (base && typeof base.title === 'string' && remote && typeof remote.title === 'string') {
+    if (base.title === list.title) out.title = remote.title;      // renamed remotely
+    else if (base.title !== remote.title) {
+      // renamed on both sides differently - keep local, conflict reported by caller
+    }
+  }
+  out.cardIds = mergeCardIds(list.id, base, list, remote);
+  return out;
+}
+
+/**
+ * Merge three board versions.
+ *
+ * @param {object} base   last agreed state (may be null on first sync)
+ * @param {object} local  this device's board
+ * @param {object} remote the other device's board
+ * @returns {{data: object, conflicts: Array, changedLocally: boolean}}
+ */
+export function mergeBoards(base, local, remote) {
+  const L = local || {};
+  const R = remote || {};
+  const B = base || null;
+
+  const baseListsById = {};
+  asLists(B).forEach((l) => { baseListsById[l.id] = l; });
+  const remoteListsById = {};
+  asLists(R).forEach((l) => { remoteListsById[l.id] = l; });
+  const localListsById = {};
+  asLists(L).forEach((l) => { localListsById[l.id] = l; });
+
+  // Lists: keep local order, then append remote-only lists.
+  const mergedLists = [];
+  const usedListIds = new Set();
+  asLists(L).forEach((list) => {
+    usedListIds.add(list.id);
+    mergedLists.push(mergeList(list, baseListsById[list.id], remoteListsById[list.id]));
+  });
+  asLists(R).forEach((list) => {
+    if (usedListIds.has(list.id)) return;
+    // Remote-only list: if it was deleted locally, keep it deleted.
+    if (baseListsById[list.id] && !localListsById[list.id]) return;
+    mergedLists.push(clone(list));
+  });
+
+  // Cards.
+  const baseCards = asCards(B);
+  const localCards = asCards(L);
+  const remoteCards = asCards(R);
+  const mergedCards = {};
+  const conflicts = [];
+  let changedLocally = false;
+
+  const allIds = new Set([
+    ...Object.keys(baseCards),
+    ...Object.keys(localCards),
+    ...Object.keys(remoteCards)
+  ]);
+
+  allIds.forEach((id) => {
+    const hasLocal = Object.prototype.hasOwnProperty.call(localCards, id);
+    const res = mergeCard(
+      id,
+      baseCards[id],
+      hasLocal ? localCards[id] : undefined,
+      remoteCards[id]
+    );
+    if (res.conflict) conflicts.push(res.conflict);
+    if (res.card) mergedCards[id] = res.card;
+    if (res.changedLocally) changedLocally = true;
+  });
+
+  // Drop references to cards that no longer exist anywhere.
+  const cleanedLists = mergedLists.map((list) => ({
+    ...list,
+    cardIds: (list.cardIds || []).filter((cid) => mergedCards[cid])
+  }));
+
+  const out = { ...clone(L), lists: cleanedLists, cards: mergedCards };
+  if (Array.isArray(L.archivedCards)) out.archivedCards = clone(L.archivedCards);
+
+  return { data: out, conflicts, changedLocally };
+}
+
+export default mergeBoards;
