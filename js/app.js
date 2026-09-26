@@ -444,19 +444,21 @@ class KanbanApp {
     this.dnd.clearDragState();
     document.querySelectorAll('.touch-drag-clone').forEach(el => el.remove());
 
-    const data = this.storage.getData();
+    const data = this.storage.getData() || {};
+    const lists = Array.isArray(data.lists) ? data.lists : [];
+    const cards = (data.cards && typeof data.cards === 'object') ? data.cards : {};
 
     // Clear lists but keep .add-list-wrapper
     const addListWrapper = document.getElementById('add-list-wrapper');
     const existingLists = this.boardEl.querySelectorAll('.kanban-list');
     existingLists.forEach(l => l.remove());
 
-    data.lists.forEach(list => {
-      const listEl = this.createListElement(list, data.cards);
+    lists.forEach(list => {
+      const listEl = this.createListElement(list, cards);
       this.boardEl.insertBefore(listEl, addListWrapper);
     });
 
-    this.renderMobileNav(data.lists, data.cards);
+    this.renderMobileNav(lists, cards);
     this.renderBoardSwitcher();
 
     if (window.lucide) {

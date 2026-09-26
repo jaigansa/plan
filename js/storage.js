@@ -16,6 +16,37 @@ const SUPABASE_CONFIG_KEY = 'kanban_supabase_config_v1';
 const SYNC_STATE_KEY = 'kanban_sync_state_v1';
 const PENDING_QUEUE_KEY = 'kanban_pending_sync_v1';
 
+function parseBoardContent(content) {
+  if (!content) return null;
+  if (typeof content === 'object') return content;
+  if (typeof content === 'string') {
+    try {
+      const parsed = JSON.parse(content);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function formatSyncErrorMessage(err, prefix = 'Cloud sync failed') {
+  const msg = (err && (err.message || err.error_description || (typeof err === 'string' ? err : ''))) || 'Unknown error';
+  if (/type uuid/i.test(msg)) {
+    return "Supabase 'id' column must be type 'text' (not 'uuid'). See SQL in README.";
+  }
+  if (/relation.*boards.*does not exist/i.test(msg)) {
+    return "Table 'boards' does not exist in Supabase. Run SQL in README.";
+  }
+  if (/row-level security/i.test(msg) || /violates row-level security/i.test(msg)) {
+    return "RLS policy error in Supabase. Add anon full access policy from README.";
+  }
+  if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+    return "Network error: check Supabase URL, Key, or internet connection.";
+  }
+  return `${prefix}: ${msg}`;
+}
+
 export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') => ({
   id,
   title,
@@ -638,13 +669,14 @@ export class StorageManager {
           'postgres_changes',
           { event: '*', schema: 'public', table: 'boards', filter: `id=eq.${boardSyncId}` },
           (payload) => {
-            if (payload.new && payload.new.content) {
+            const remoteContent = payload.new ? parseBoardContent(payload.new.content) : null;
+            if (remoteContent) {
               const currentTarget = (this.boards && this.boards[targetBoardId]) || (targetBoardId === this.activeBoardId ? this.data : null);
               if (!currentTarget) return;
 
               const base = this.getSyncSnapshot(boardSyncId);
               const { data: merged, conflicts, changedLocally } =
-                mergeBoards(base, currentTarget, payload.new.content);
+                mergeBoards(base, currentTarget, remoteContent);
 
               merged.id = targetBoardId;
               this.boards[targetBoardId] = merged;
@@ -693,17 +725,18 @@ export class StorageManager {
 
       if (error) throw error;
 
-      if (data && data.content) {
+      const remoteContent = data ? parseBoardContent(data.content) : null;
+      if (remoteContent) {
         const base = this.getSyncSnapshot(boardSyncId);
         const { data: merged, conflicts, changedLocally } =
-          mergeBoards(base, targetBoard, data.content);
+          mergeBoards(base, targetBoard, remoteContent);
 
         merged.id = targetBoardId;
         if (conflicts.length && targetBoardId === this.activeBoardId) {
           this.reportConflicts(conflicts);
         }
 
-        const differs = JSON.stringify(merged) !== JSON.stringify(data.content);
+        const differs = JSON.stringify(merged) !== JSON.stringify(remoteContent);
         this.boards[targetBoardId] = merged;
         this.setSyncSnapshot(boardSyncId, merged, data.updated_at);
 
@@ -735,7 +768,7 @@ export class StorageManager {
     } catch (err) {
       console.warn('Supabase fetch error, keeping local data:', err.message);
       this.enqueueSync(targetBoardId);
-      this.notifyStatus({ online: false, syncing: false, message: 'Cloud sync failed: ' + err.message });
+      this.notifyStatus({ online: false, syncing: false, message: formatSyncErrorMessage(err, 'Cloud sync failed') });
     }
   }
 
@@ -750,7 +783,8 @@ export class StorageManager {
       let changed = false;
       for (const row of data) {
         if (!row || !row.id || !row.content) continue;
-        const remoteContent = row.content;
+        const remoteContent = parseBoardContent(row.content);
+        if (!remoteContent) continue;
 
         let localId = null;
         for (const [id] of Object.entries(this.boards)) {
@@ -952,13 +986,14 @@ export class StorageManager {
       let payload = localBoard;
       let conflicts = [];
 
-      const remoteChanged = remoteRow && remoteRow.content &&
+      const remoteContent = remoteRow ? parseBoardContent(remoteRow.content) : null;
+      const remoteChanged = remoteContent &&
         remoteRow.updated_at &&
         (!state.lastSyncedAt || String(remoteRow.updated_at) > String(state.lastSyncedAt));
 
       if (remoteChanged) {
         const { data: merged, conflicts: found } =
-          mergeBoards(state.snapshot, localBoard, remoteRow.content);
+          mergeBoards(state.snapshot, localBoard, remoteContent);
         merged.id = targetBoardId;
         payload = merged;
         conflicts = found || [];
@@ -996,7 +1031,7 @@ export class StorageManager {
     } catch (err) {
       console.error('Supabase upload error:', err);
       this.enqueueSync(targetBoardId);
-      this.notifyStatus({ online: false, syncing: false, message: 'Cloud save failed: ' + err.message });
+      this.notifyStatus({ online: false, syncing: false, message: formatSyncErrorMessage(err, 'Cloud save failed') });
     }
   }
 

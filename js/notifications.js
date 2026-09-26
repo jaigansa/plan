@@ -249,8 +249,14 @@ export class NotificationManager {
     if (!this.swRegistration) return false;
     try {
       if ('periodicSync' in this.swRegistration) {
-        const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
-        if (status.state === 'granted') {
+        let status;
+        try {
+          status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+        } catch {
+          // Unsupported permission name in this browser
+          return false;
+        }
+        if (status && status.state === 'granted') {
           await this.swRegistration.periodicSync.register('plan-reminders', { minInterval: 15 * 60 * 1000 });
           return true;
         }
