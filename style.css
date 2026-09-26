@@ -3194,9 +3194,30 @@ kbd {
     color: #ef4444;
   }
 
-  /* On mobile: card dragging is disabled; list reordering is handled via the mobile nav bar pills */
+  /* Card drag grip handle on mobile: generous touch target for quick dragging */
   .card-drag-grip {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 6px;
+    margin: -6px 0 -6px -6px;
+    opacity: 0.65;
+    cursor: grab;
+    touch-action: none; /* Prevents scroll interference when dragging from grip */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card-drag-grip:active {
+    cursor: grabbing;
+    opacity: 1;
+    color: var(--accent-color);
+  }
+
+  .card-drag-grip svg {
+    width: 18px;
+    height: 18px;
   }
 
   /* Quick Add Bar */

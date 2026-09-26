@@ -900,16 +900,11 @@ class KanbanApp {
     const priorityHint = pInfo
       ? `Priority: ${pInfo.name} (Click todo to cycle priority)`
       : 'Click todo to set priority';
-    cardEl.setAttribute(
-      'title',
-      cardsDraggable
-        ? `${priorityHint} · Drag to reorder`
-        : `${priorityHint} · Reorder lists from the pill bar above`
-    );
+    cardEl.setAttribute('title', `${priorityHint} · Drag to reorder`);
 
     cardEl.innerHTML = `
       <div class="card-main-row">
-        <div class="card-drag-grip" title="${cardsDraggable ? 'Drag to sort' : 'Reorder lists from the pill bar'}"><i data-lucide="grip-vertical"></i></div>
+        <div class="card-drag-grip" title="Drag to reorder"><i data-lucide="grip-vertical"></i></div>
         <label class="card-complete-toggle" title="${card.completed ? 'Mark incomplete' : 'Mark completed'}">
           <input type="checkbox" class="card-done-chk" ${card.completed ? 'checked' : ''} />
           <span class="card-chk-custom"></span>

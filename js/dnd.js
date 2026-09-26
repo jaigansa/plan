@@ -330,16 +330,12 @@ export class DndController {
   }
 
   attachCardTouchEvents(cardEl, cardId, listId) {
-    // Disabled on mobile viewport: only pill reordering is active on mobile
-    if (this.isMobileViewport()) return;
-    const grip = cardEl.querySelector('.card-drag-grip') || cardEl;
-
-    grip.addEventListener('touchstart', (e) => {
-      // Only initiate touch drag from the dedicated card grip handle
-      if (!e.target.closest('.card-drag-grip')) return;
+    cardEl.addEventListener('touchstart', (e) => {
+      // Don't drag when interacting with controls (checkbox, delete button, inputs)
       if (e.target.closest('input, button, textarea, select, .day-chip, .card-complete-toggle, .card-delete-quick-btn')) return;
       if (e.touches.length !== 1) return;
 
+      const isFromGrip = !!e.target.closest('.card-drag-grip');
       const touch = e.touches[0];
       this.touchCardEl = cardEl;
       this.touchCardId = cardId;
@@ -352,9 +348,11 @@ export class DndController {
       this.touchOffsetY = touch.clientY - rect.top;
 
       clearTimeout(this.touchHoldTimer);
+      // From grip handle: arm fast (60ms). From card body: hold for 220ms so scrolling works smoothly
+      const delay = isFromGrip ? 60 : 220;
       this.touchHoldTimer = setTimeout(() => {
         this.startTouchDrag(rect);
-      }, 100);
+      }, delay);
     }, { passive: true });
   }
 
