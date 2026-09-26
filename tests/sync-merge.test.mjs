@@ -275,3 +275,31 @@ test('deletedListIds tombstone deletes list across devices even without base sna
   assert.ok(data.deletedListIds.includes('L2'));
 });
 
+test('card days sync across devices: remote days update is adopted', () => {
+  const base = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a', title: 'Task', days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'] } }) };
+  const local = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a', title: 'Task', days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'] } }) };
+  const remote = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a', title: 'Task', days: ['M', 'W', 'F'] } }) };
+
+  const { data } = mergeBoards(base, local, remote);
+  assert.deepEqual(data.cards.a.days, ['M', 'W', 'F'], 'remote customized days must be merged');
+});
+
+test('card days sync on first sync without base snapshot: remote customized days are adopted', () => {
+  const base = null;
+  const local = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a', title: 'Task', days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'] } }) };
+  const remote = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a', title: 'Task', days: ['M', 'W', 'F'] } }) };
+
+  const { data } = mergeBoards(base, local, remote);
+  assert.deepEqual(data.cards.a.days, ['M', 'W', 'F'], 'remote custom days win over local default all-days');
+});
+
+test('list days sync across devices: remote list default days are adopted', () => {
+  const base = { lists: [{ id: 'L1', title: 'Plan', days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'], cardIds: [] }], cards: {} };
+  const local = { lists: [{ id: 'L1', title: 'Plan', days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'], cardIds: [] }], cards: {} };
+  const remote = { lists: [{ id: 'L1', title: 'Plan', days: ['M', 'W', 'F'], cardIds: [] }], cards: {} };
+
+  const { data } = mergeBoards(base, local, remote);
+  assert.deepEqual(data.lists[0].days, ['M', 'W', 'F'], 'remote list days must be merged');
+});
+
+

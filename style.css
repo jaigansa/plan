@@ -2377,6 +2377,59 @@ kbd {
   box-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
 }
 
+/* Card Days Row */
+.card-days-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 5px;
+  padding-left: 20px;
+}
+
+.card-day-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  min-height: 17px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--tui-dim, #666);
+  font-family: var(--tui-font, monospace);
+  font-size: 0.60rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+[data-theme^="tui"] .card-day-chip {
+  border-radius: 0;
+}
+
+.card-day-chip:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(0, 255, 102, 0.12);
+}
+
+.card-day-chip.active {
+  border-color: var(--accent-color);
+  color: #030704;
+  background: var(--accent-color);
+  font-weight: 800;
+}
+
+[data-theme="tui-amber"] .card-day-chip.active {
+  color: #0d0800;
+}
+
 /* View Switcher (Board vs Calendar) */
 .view-switcher {
   display: flex;

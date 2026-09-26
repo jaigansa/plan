@@ -29,6 +29,14 @@ function same(a, b) {
   return JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b);
 }
 
+export function sameDays(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return same(a, b);
+  if (a.length !== b.length) return false;
+  const sA = [...a].sort().join(',');
+  const sB = [...b].sort().join(',');
+  return sA === sB;
+}
+
 function asCards(data) {
   return (data && data.cards && typeof data.cards === 'object') ? data.cards : {};
 }
@@ -98,14 +106,42 @@ function mergeFields(id, l, r, b) {
     const rv = r[key];
     const bv = b ? b[key] : undefined;
 
-    if (same(lv, rv)) return;              // both agree
-    if (same(lv, bv)) {                     // only remote changed
+    const areEqual = key === 'days' ? sameDays(lv, rv) : same(lv, rv);
+    if (areEqual) return;              // both agree
+
+    const remoteChangedOnly = key === 'days' ? sameDays(lv, bv) : same(lv, bv);
+    if (remoteChangedOnly) {           // only remote changed
       if (rv !== undefined) out[key] = clone(rv);
       return;
     }
-    if (same(rv, bv)) {                     // only local changed -> keep local
+
+    const localChangedOnly = key === 'days' ? sameDays(rv, bv) : same(rv, bv);
+    if (localChangedOnly) {            // only local changed -> keep local
       changedLocally = true;
       return;
+    }
+
+    // When there is no base snapshot (first sync / clean device):
+    if (!b) {
+      if (key === 'days') {
+        const allDaysStr = 'F,M,R,S,T,U,W';
+        const lStr = Array.isArray(lv) ? [...lv].sort().join(',') : '';
+        const rStr = Array.isArray(rv) ? [...rv].sort().join(',') : '';
+        // If local has default all-days and remote has custom days, adopt remote
+        if (lStr === allDaysStr && rStr !== allDaysStr && rv !== undefined) {
+          out[key] = clone(rv);
+          return;
+        }
+        if (rStr === allDaysStr && lStr !== allDaysStr) {
+          changedLocally = true;
+          return;
+        }
+      }
+      // If remote has a defined value and local is empty/falsy, take remote
+      if ((lv === undefined || lv === null || lv === '') && rv !== undefined) {
+        out[key] = clone(rv);
+        return;
+      }
     }
 
     // Both changed the same field differently. Keep local (the user is looking
@@ -163,6 +199,11 @@ function mergeList(list, base, remote) {
     if (base.title === list.title) out.title = remote.title;      // renamed remotely
     else if (base.title !== remote.title) {
       // renamed on both sides differently - keep local, conflict reported by caller
+    }
+  }
+  if (remote && Array.isArray(remote.days)) {
+    if (!base || sameDays(list.days, base.days)) {
+      out.days = clone(remote.days);
     }
   }
   out.cardIds = mergeCardIds(list.id, base, list, remote);

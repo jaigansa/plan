@@ -910,12 +910,14 @@ class KanbanApp {
     const listFooterEl = document.createElement('div');
     listFooterEl.className = 'kanban-list-footer';
 
+    const listDays = (Array.isArray(list.days) && list.days.length) ? list.days : ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
     const daysChipsHtml = DAY_INFO.map(d => {
-      return `<button type="button" class="day-chip active" data-day="${d.code}" title="${d.full}: Reminder ON (click to toggle)">${d.code}</button>`;
+      const active = listDays.includes(d.code);
+      return `<button type="button" class="day-chip ${active ? 'active' : ''}" data-day="${d.code}" title="${d.full}: Default reminder ${active ? 'ON' : 'OFF'} (click to toggle)">${d.code}</button>`;
     }).join('');
 
     listFooterEl.innerHTML = `
-      <div class="quick-add-days-group" title="Active Reminder Days for new cards (M, T, W, R, F, S, U - Multi-select)">
+      <div class="quick-add-days-group" title="Default Reminder Days for this list (M, T, W, R, F, S, U - Multi-select)">
         <span class="days-footer-label"><i data-lucide="bell"></i> Days:</span>
         <div class="days-chips-wrapper">
           ${daysChipsHtml}
@@ -928,20 +930,17 @@ class KanbanApp {
       chip.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        chip.classList.toggle('active');
-        const isActive = chip.classList.contains('active');
         const dayCode = chip.getAttribute('data-day');
-        const info = DAY_INFO.find(d => d.code === dayCode);
-        chip.title = `${info ? info.full : dayCode}: ${isActive ? 'Reminder ON (click to toggle)' : 'Reminder OFF (click to toggle)'}`;
+        this.toggleListDay(list.id, dayCode);
       });
     });
 
     quickForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const val = quickInput.value.trim();
-      const activeDays = [...listFooterEl.querySelectorAll('.day-chip.active')].map(c => c.getAttribute('data-day'));
+      const currentDays = (Array.isArray(list.days) && list.days.length) ? list.days : ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
       if (val) {
-        this.addCard(list.id, val, '', activeDays);
+        this.addCard(list.id, val, '', currentDays);
         quickInput.value = '';
         quickInput.focus();
       }
@@ -972,6 +971,12 @@ class KanbanApp {
       : 'Click todo to set priority';
     cardEl.setAttribute('title', `${priorityHint} · Drag grip handle to reorder`);
 
+    const cardDays = (Array.isArray(card.days) && card.days.length) ? card.days : ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+    const cardDaysHtml = DAY_INFO.map(d => {
+      const active = cardDays.includes(d.code);
+      return `<button type="button" class="card-day-chip ${active ? 'active' : ''}" data-day="${d.code}" title="${d.full}: Reminder ${active ? 'ON' : 'OFF'} (click to toggle)">${d.code}</button>`;
+    }).join('');
+
     cardEl.innerHTML = `
       <div class="card-main-row">
         <div class="card-drag-grip" title="Drag to reorder"><i data-lucide="grip-vertical"></i></div>
@@ -981,6 +986,9 @@ class KanbanApp {
         </label>
         <span class="card-title ${card.completed ? 'completed-text' : ''}">${this.escapeHtml(card.title)}</span>
         <button type="button" class="card-delete-quick-btn" title="Delete todo"><i data-lucide="x"></i></button>
+      </div>
+      <div class="card-days-row" title="Reminder Days (click day to toggle)">
+        ${cardDaysHtml}
       </div>
     `;
 
@@ -1034,10 +1042,19 @@ class KanbanApp {
       });
     }
 
-    // Click todo item to cycle priority (exclude grip, checkbox, delete button)
+    // Card day chips toggle
+    cardEl.querySelectorAll('.card-day-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dayCode = chip.getAttribute('data-day');
+        this.toggleCardDay(card.id, dayCode);
+      });
+    });
+
+    // Click todo item to cycle priority (exclude grip, checkbox, delete button, day chips)
     cardEl.addEventListener('click', (e) => {
       if (this.dnd.isDragging || this.dnd.isTouchDragging) return;
-      if (e.target.closest('.card-complete-toggle, .card-delete-quick-btn, .card-drag-grip, input, button')) {
+      if (e.target.closest('.card-complete-toggle, .card-delete-quick-btn, .card-drag-grip, .card-day-chip, input, button')) {
         return;
       }
       this.cycleCardPriority(card.id);
@@ -1172,6 +1189,48 @@ class KanbanApp {
     if (!card) return;
 
     card.completed = !card.completed;
+    this.storage.saveLocal(data);
+    this.renderBoard();
+  }
+
+  toggleCardDay(cardId, dayCode) {
+    const data = this.storage.getData();
+    const card = data.cards[cardId];
+    if (!card) return;
+
+    const ALL_DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+    if (!Array.isArray(card.days) || card.days.length === 0) {
+      card.days = [...ALL_DAYS];
+    }
+
+    if (card.days.includes(dayCode)) {
+      card.days = card.days.filter(d => d !== dayCode);
+    } else {
+      card.days.push(dayCode);
+      card.days.sort((a, b) => ALL_DAYS.indexOf(a) - ALL_DAYS.indexOf(b));
+    }
+
+    this.storage.saveLocal(data);
+    this.renderBoard();
+  }
+
+  toggleListDay(listId, dayCode) {
+    const data = this.storage.getData();
+    const list = (data.lists || []).find(l => l.id === listId);
+    if (!list) return;
+
+    const ALL_DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+    if (!Array.isArray(list.days) || list.days.length === 0) {
+      list.days = [...ALL_DAYS];
+    }
+
+    if (list.days.includes(dayCode)) {
+      list.days = list.days.filter(d => d !== dayCode);
+    } else {
+      list.days.push(dayCode);
+      list.days.sort((a, b) => ALL_DAYS.indexOf(a) - ALL_DAYS.indexOf(b));
+    }
+
     this.storage.saveLocal(data);
     this.renderBoard();
   }
