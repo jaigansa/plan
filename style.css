@@ -3194,13 +3194,21 @@ kbd {
     color: #ef4444;
   }
 
-  /* The grip stays visible on mobile so card layout matches desktop. Card
-     reordering itself is done from the pill bar, so the handle is not a drag
-     target here. Touch has no hover, so raise the resting opacity a little. */
+  /* The grip handle is the dedicated touch-drag target for reordering todo cards on mobile */
   .card-drag-grip {
     display: flex;
-    opacity: 0.5;
-    cursor: default;
+    opacity: 0.6;
+    cursor: grab;
+    touch-action: none; /* Prevents scroll interference when dragging from the grip handle */
+    padding: 4px 6px;
+    margin: -4px -2px -4px -4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .card-drag-grip:active {
+    cursor: grabbing;
+    opacity: 1;
+    color: var(--accent-color);
   }
 
   .card-drag-grip svg {

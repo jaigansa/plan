@@ -239,21 +239,9 @@ export class DndController {
     window.addEventListener('touchcancel', (e) => this.handleGlobalTouchEnd(e));
   }
 
-  // --- Mobile Nav Pill Reordering (replaces whole-card drag on mobile) ---
+  // List column dragging is disabled on mobile; nav pills act purely as quick navigation jump buttons.
   attachPillTouchEvents(pillEl, listId) {
-    pillEl.addEventListener('touchstart', (e) => {
-      if (!this.isMobileViewport()) return;
-      if (e.touches.length !== 1) return;
-
-      const touch = e.touches[0];
-      this.pillDragEl = pillEl;
-      this.pillDragListId = listId;
-      this.pillStartX = touch.clientX;
-
-      clearTimeout(this.pillHoldTimer);
-      // Hold to arm: a quick swipe must still scroll the pill bar.
-      this.pillHoldTimer = setTimeout(() => this.startPillDrag(), 180);
-    }, { passive: true });
+    return;
   }
 
   startPillDrag() {
@@ -330,7 +318,6 @@ export class DndController {
   }
 
   attachCardTouchEvents(cardEl, cardId, listId) {
-    if (this.isMobileViewport()) return;
     const grip = cardEl.querySelector('.card-drag-grip') || cardEl;
 
     grip.addEventListener('touchstart', (e) => {
@@ -353,7 +340,7 @@ export class DndController {
       clearTimeout(this.touchHoldTimer);
       this.touchHoldTimer = setTimeout(() => {
         this.startTouchDrag(rect);
-      }, 150);
+      }, 100);
     }, { passive: true });
   }
 
@@ -434,6 +421,8 @@ export class DndController {
       this.touchCloneEl.style.left = `${touch.clientX - this.touchOffsetX}px`;
       this.touchCloneEl.style.top = `${touch.clientY - this.touchOffsetY}px`;
     }
+
+    this.autoScrollBoard(touch);
 
     const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!elemBelow) return;
