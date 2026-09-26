@@ -755,6 +755,7 @@ body {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   user-select: none;
+  -webkit-user-drag: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -920,10 +921,16 @@ body {
   color: var(--text-secondary);
   opacity: 0.35;
   cursor: grab;
+  touch-action: none;
+  -webkit-user-drag: element;
   display: flex;
   align-items: center;
   flex-shrink: 0;
   transition: opacity 0.15s;
+}
+
+.card-drag-grip:active {
+  cursor: grabbing;
 }
 
 .kanban-card:hover .card-drag-grip {

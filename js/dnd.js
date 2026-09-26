@@ -102,6 +102,11 @@ export class DndController {
 
   // --- Card Drag & Drop ---
   handleCardDragStart(e, cardId, listId) {
+    // Strictly forbid card dragging unless initiated from the drag grip handle
+    if (!e.target.closest('.card-drag-grip')) {
+      e.preventDefault();
+      return;
+    }
     if (e.target.closest('input, button, textarea, select, .card-delete-quick-btn')) {
       e.preventDefault();
       return;
@@ -114,9 +119,10 @@ export class DndController {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', cardId);
 
+    const cardEl = (e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('.kanban-card') : null) || (e.target && e.target.closest ? e.target.closest('.kanban-card') : null);
     setTimeout(() => {
-      if (e.target && e.target.classList) {
-        e.target.classList.add('is-dragging');
+      if (cardEl && cardEl.classList) {
+        cardEl.classList.add('is-dragging');
       }
     }, 0);
 
@@ -124,7 +130,14 @@ export class DndController {
   }
 
   handleCardDragEnd(e) {
-    if (e.currentTarget) e.currentTarget.classList.remove('is-dragging');
+    if (e.currentTarget) {
+      e.currentTarget.classList.remove('is-dragging');
+      if (e.currentTarget.removeAttribute) e.currentTarget.removeAttribute('draggable');
+    }
+    document.querySelectorAll('.kanban-card.is-dragging').forEach(el => {
+      el.classList.remove('is-dragging');
+      el.removeAttribute('draggable');
+    });
     this.clearDragState();
     this.draggedCardId = null;
     this.sourceListId = null;
@@ -182,7 +195,11 @@ export class DndController {
 
   // --- List Drag & Drop ---
   handleListDragStart(e, listId) {
-    if (e.target.closest('.kanban-card, button, input, textarea, select, .list-quick-add, .cards-container')) return;
+    // Drag list must strictly originate from the list header, and never from cards, inputs, buttons, or list body
+    if (!e.target.closest('.list-header') || e.target.closest('button, input, textarea, select, .kanban-card, .cards-container, .list-quick-add, .kanban-list-footer')) {
+      e.preventDefault();
+      return;
+    }
     this.draggedListId = listId;
     this.draggedCardId = null;
     e.dataTransfer.effectAllowed = 'move';
@@ -190,7 +207,14 @@ export class DndController {
   }
 
   handleListDragEnd(e) {
-    if (e.currentTarget) e.currentTarget.classList.remove('list-dragging');
+    if (e.currentTarget) {
+      e.currentTarget.classList.remove('list-dragging');
+      if (e.currentTarget.removeAttribute) e.currentTarget.removeAttribute('draggable');
+    }
+    document.querySelectorAll('.kanban-list.list-dragging').forEach(el => {
+      el.classList.remove('list-dragging');
+      el.removeAttribute('draggable');
+    });
     this.clearDragState();
     this.draggedListId = null;
   }
@@ -330,7 +354,8 @@ export class DndController {
   }
 
   attachCardTouchEvents(cardEl, cardId, listId) {
-    const grip = cardEl.querySelector('.card-drag-grip') || cardEl;
+    const grip = cardEl.querySelector('.card-drag-grip');
+    if (!grip) return;
 
     grip.addEventListener('touchstart', (e) => {
       // Strictly require touching from the dedicated card grip handle only

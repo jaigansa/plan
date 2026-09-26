@@ -744,12 +744,6 @@ class KanbanApp {
     const listEl = document.createElement('div');
     listEl.className = 'kanban-list';
     listEl.setAttribute('data-list-id', list.id);
-    listEl.setAttribute('draggable', 'true');
-
-    // Drag list listeners
-    listEl.addEventListener('dragstart', (e) => this.dnd.handleListDragStart(e, list.id));
-    listEl.addEventListener('dragend', (e) => this.dnd.handleListDragEnd(e));
-    this.dnd.attachListTouchEvents(listEl, list.id);
 
     const cards = (list.cardIds || []).map(id => cardsMap[id]).filter(Boolean);
 
@@ -794,6 +788,31 @@ class KanbanApp {
         e.stopPropagation();
         this.toggleListShared(list.id);
       });
+    }
+
+    // List dragging is desktop-only and strictly armed from list header (never list body or cards)
+    if (!this.dnd.isMobileViewport()) {
+      headerEl.addEventListener('mousedown', (e) => {
+        if (!e.target.closest('input, button, textarea, select')) {
+          listEl.setAttribute('draggable', 'true');
+        }
+      });
+      headerEl.addEventListener('mouseup', () => {
+        listEl.removeAttribute('draggable');
+      });
+      listEl.addEventListener('dragstart', (e) => {
+        if (!e.target.closest('.list-header') || e.target.closest('input, button, textarea, select, .kanban-card, .cards-container, .list-quick-add')) {
+          e.preventDefault();
+          listEl.removeAttribute('draggable');
+          return;
+        }
+        this.dnd.handleListDragStart(e, list.id);
+      });
+      listEl.addEventListener('dragend', (e) => {
+        listEl.removeAttribute('draggable');
+        this.dnd.handleListDragEnd(e);
+      });
+      this.dnd.attachListTouchEvents(listEl, list.id);
     }
 
     // Quick Add Bar right inside the list (at top below header)!
@@ -882,17 +901,6 @@ class KanbanApp {
     const priorityClass = card.priority ? `priority-${card.priority}` : 'priority-none';
     cardEl.className = `kanban-card ${priorityClass}` + (card.completed ? ' is-completed' : '');
 
-    // On narrow viewports reordering is done from the list pill bar, and HTML5
-    // drag cannot run anyway. Leaving draggable="true" there advertises a
-    // gesture that does nothing, so only claim it where it is real.
-    const cardsDraggable = !this.dnd.isMobileViewport();
-    if (cardsDraggable) {
-      cardEl.setAttribute('draggable', 'true');
-      cardEl.addEventListener('dragstart', (e) => this.dnd.handleCardDragStart(e, card.id, listId));
-      cardEl.addEventListener('dragend', (e) => this.dnd.handleCardDragEnd(e));
-    }
-    this.dnd.attachCardTouchEvents(cardEl, card.id, listId);
-
     cardEl.setAttribute('data-card-id', card.id);
     cardEl.setAttribute('data-priority', card.priority || '');
 
@@ -900,7 +908,7 @@ class KanbanApp {
     const priorityHint = pInfo
       ? `Priority: ${pInfo.name} (Click todo to cycle priority)`
       : 'Click todo to set priority';
-    cardEl.setAttribute('title', `${priorityHint} · Drag to reorder`);
+    cardEl.setAttribute('title', `${priorityHint} · Drag grip handle to reorder`);
 
     cardEl.innerHTML = `
       <div class="card-main-row">
@@ -913,6 +921,41 @@ class KanbanApp {
         <button type="button" class="card-delete-quick-btn" title="Delete todo"><i data-lucide="x"></i></button>
       </div>
     `;
+
+    // Drag listeners: strictly arm draggable only when pressing the drag grip handle.
+    // The card body itself is never draggable.
+    const grip = cardEl.querySelector('.card-drag-grip');
+    if (grip) {
+      grip.addEventListener('mousedown', () => {
+        cardEl.setAttribute('draggable', 'true');
+      });
+      grip.addEventListener('mouseup', () => {
+        cardEl.removeAttribute('draggable');
+      });
+      grip.addEventListener('mouseleave', () => {
+        if (!this.dnd.isDragging) {
+          cardEl.removeAttribute('draggable');
+        }
+      });
+    }
+
+    cardEl.addEventListener('dragstart', (e) => {
+      // Abort immediately if drag was not initiated on the grip handle
+      if (!e.target.closest('.card-drag-grip')) {
+        e.preventDefault();
+        cardEl.removeAttribute('draggable');
+        return;
+      }
+      this.dnd.handleCardDragStart(e, card.id, listId);
+    });
+
+    cardEl.addEventListener('dragend', (e) => {
+      cardEl.removeAttribute('draggable');
+      this.dnd.handleCardDragEnd(e);
+    });
+
+    // Touch events on grip for mobile / touch devices
+    this.dnd.attachCardTouchEvents(cardEl, card.id, listId);
 
     // Completion checkbox toggle
     const chk = cardEl.querySelector('.card-done-chk');
@@ -931,10 +974,10 @@ class KanbanApp {
       });
     }
 
-    // Click todo item to cycle priority
+    // Click todo item to cycle priority (exclude grip, checkbox, delete button)
     cardEl.addEventListener('click', (e) => {
       if (this.dnd.isDragging || this.dnd.isTouchDragging) return;
-      if (e.target.closest('.card-complete-toggle, .card-delete-quick-btn, input, button')) {
+      if (e.target.closest('.card-complete-toggle, .card-delete-quick-btn, .card-drag-grip, input, button')) {
         return;
       }
       this.cycleCardPriority(card.id);
