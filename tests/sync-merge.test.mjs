@@ -248,3 +248,30 @@ test('deletedCardIds tombstone prevents resurrection even without base snapshot'
   assert.deepEqual(data.lists[0].cardIds, ['a']);
   assert.ok(data.deletedCardIds.includes('b'));
 });
+
+test('a list deleted remotely and untouched locally is deleted locally on other device', () => {
+  const base = { lists: [list('L1', ['a']), list('L2', ['b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+  // Local (device B) still has L1 and L2
+  const local = { lists: [list('L1', ['a']), list('L2', ['b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+  // Remote (device A) deleted L2 and its card b
+  const remote = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a' } }), deletedListIds: ['L2'], deletedCardIds: ['b'] };
+
+  const { data, changedLocally } = mergeBoards(base, local, remote);
+  assert.deepEqual(data.lists.map(l => l.id), ['L1'], 'L2 must be deleted on local device too');
+  assert.equal(data.cards.b, undefined, 'card b in deleted list must be deleted');
+  assert.ok(data.deletedListIds.includes('L2'), 'deletedListIds includes L2');
+  assert.equal(changedLocally, true);
+});
+
+test('deletedListIds tombstone deletes list across devices even without base snapshot', () => {
+  const base = null;
+  // Local (device B) has L1 and L2
+  const local = { lists: [list('L1', ['a']), list('L2', ['b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+  // Remote (device A) deleted L2 and tombstones it
+  const remote = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a' } }), deletedListIds: ['L2'] };
+
+  const { data } = mergeBoards(base, local, remote);
+  assert.deepEqual(data.lists.map(l => l.id), ['L1'], 'L2 must be removed by deletedListIds tombstone');
+  assert.ok(data.deletedListIds.includes('L2'));
+});
+

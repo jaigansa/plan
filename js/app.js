@@ -1055,6 +1055,9 @@ class KanbanApp {
   addList(title) {
     const data = this.storage.getData();
     const id = 'list-' + Date.now();
+    if (Array.isArray(data.deletedListIds)) {
+      data.deletedListIds = data.deletedListIds.filter(lid => lid !== id);
+    }
     const defaultColors = ['#00ff66', '#3b82f6', '#10b981', '#f97316', '#8b5cf6'];
     const randomColor = defaultColors[data.lists.length % defaultColors.length];
     data.lists.push({ id, title, color: randomColor, cardIds: [] });
@@ -1076,6 +1079,16 @@ class KanbanApp {
     const listIndex = data.lists.findIndex(l => l.id === listId);
     if (listIndex > -1) {
       const [removedList] = data.lists.splice(listIndex, 1);
+      if (!Array.isArray(data.deletedListIds)) {
+        data.deletedListIds = [];
+      }
+      if (!data.deletedListIds.includes(listId)) {
+        data.deletedListIds.push(listId);
+      }
+      if (data.deletedListIds.length > 50) {
+        data.deletedListIds = data.deletedListIds.slice(-50);
+      }
+
       if (!Array.isArray(data.deletedCardIds)) {
         data.deletedCardIds = [];
       }

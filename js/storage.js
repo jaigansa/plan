@@ -97,7 +97,8 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
   ],
   cards: {},
   archivedCards: [],
-  deletedCardIds: []
+  deletedCardIds: [],
+  deletedListIds: []
 });
 
 export class StorageManager {
@@ -172,6 +173,7 @@ export class StorageManager {
             const b = parsed[k];
             if (!b.archivedCards) b.archivedCards = [];
             if (!Array.isArray(b.deletedCardIds)) b.deletedCardIds = [];
+            if (!Array.isArray(b.deletedListIds)) b.deletedListIds = [];
             b.deletedCardIds = b.deletedCardIds.filter(id => !legacyDemoIds.has(id));
             if (b.cards && typeof b.cards === 'object') {
               legacyDemoIds.forEach(demoId => {
@@ -393,6 +395,43 @@ export class StorageManager {
     return true;
   }
 
+  deleteList(listId, targetBoardId = this.activeBoardId) {
+    const targetId = targetBoardId || this.activeBoardId;
+    const board = (this.boards && this.boards[targetId]) || (targetId === this.activeBoardId ? this.data : null);
+    if (!board || !Array.isArray(board.lists)) return false;
+
+    const listIndex = board.lists.findIndex(l => l.id === listId);
+    if (listIndex === -1) return false;
+
+    const [removedList] = board.lists.splice(listIndex, 1);
+
+    if (!Array.isArray(board.deletedListIds)) {
+      board.deletedListIds = [];
+    }
+    if (!board.deletedListIds.includes(listId)) {
+      board.deletedListIds.push(listId);
+      if (board.deletedListIds.length > 50) {
+        board.deletedListIds.shift();
+      }
+    }
+
+    if (!Array.isArray(board.deletedCardIds)) {
+      board.deletedCardIds = [];
+    }
+    (removedList.cardIds || []).forEach(cId => {
+      if (board.cards) delete board.cards[cId];
+      if (!board.deletedCardIds.includes(cId)) {
+        board.deletedCardIds.push(cId);
+      }
+    });
+    if (board.deletedCardIds.length > 200) {
+      board.deletedCardIds = board.deletedCardIds.slice(-200);
+    }
+
+    this.saveLocal(board);
+    return true;
+  }
+
   getData() {
     return this.data;
   }
@@ -429,6 +468,7 @@ export class StorageManager {
     ];
     newBoard.cards = {};
     newBoard.deletedCardIds = [];
+    newBoard.deletedListIds = [];
     delete newBoard.isDefault;
     this.boards[id] = newBoard;
     this.switchBoard(id);

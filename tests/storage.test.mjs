@@ -551,3 +551,25 @@ test('StorageManager: toggle between Local and Cloud mode without losing credent
   assert.equal(manager.isCloudEnabled(), false);
   assert.equal(manager.supabaseClient, null, 'Supabase client disconnected in local mode');
 });
+
+test('deleteList permanently removes list, clears cards, and records tombstones', async () => {
+  const { manager } = await freshStart();
+  const listId = 'list-custom-to-delete';
+  manager.data.lists.push({ id: listId, title: 'To Delete', cardIds: ['card-inside-list'] });
+  manager.data.cards['card-inside-list'] = { id: 'card-inside-list', title: 'Card inside' };
+  manager.saveAllBoards();
+
+  assert.ok(manager.getData().lists.some(l => l.id === listId));
+  assert.ok(manager.getData().cards['card-inside-list']);
+
+  const res = manager.deleteList(listId);
+  assert.equal(res, true);
+
+  const updated = manager.getData();
+  assert.ok(!updated.lists.some(l => l.id === listId), 'list must be removed from lists');
+  assert.equal(updated.cards['card-inside-list'], undefined, 'cards inside list must be removed');
+  assert.ok(Array.isArray(updated.deletedListIds), 'deletedListIds array exists');
+  assert.ok(updated.deletedListIds.includes(listId), 'listId recorded in deletedListIds');
+  assert.ok(updated.deletedCardIds.includes('card-inside-list'), 'card recorded in deletedCardIds');
+});
+

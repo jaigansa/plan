@@ -182,6 +182,9 @@ export function mergeBoards(base, local, remote) {
   const R = remote || {};
   const B = base || null;
 
+  let changedLocally = false;
+  const conflicts = [];
+
   const baseListsById = {};
   asLists(B).forEach((l) => { baseListsById[l.id] = l; });
   const remoteListsById = {};
@@ -189,15 +192,34 @@ export function mergeBoards(base, local, remote) {
   const localListsById = {};
   asLists(L).forEach((l) => { localListsById[l.id] = l; });
 
+  const localDeletedLists = new Set(Array.isArray(L.deletedListIds) ? L.deletedListIds : []);
+  const remoteDeletedLists = new Set(Array.isArray(R.deletedListIds) ? R.deletedListIds : []);
+  const allDeletedLists = new Set([...localDeletedLists, ...remoteDeletedLists]);
+
   // Lists: keep local order, then append remote-only lists.
   const mergedLists = [];
   const usedListIds = new Set();
   asLists(L).forEach((list) => {
+    // 1. Drop list if tombstoned on either side
+    if (allDeletedLists.has(list.id)) {
+      changedLocally = true;
+      return;
+    }
+    // 2. Drop list if present in base, untouched locally, but deleted remotely
+    if (baseListsById[list.id] && !remoteListsById[list.id]) {
+      const baseList = baseListsById[list.id];
+      if (baseList.title === list.title) {
+        allDeletedLists.add(list.id);
+        changedLocally = true;
+        return;
+      }
+    }
     usedListIds.add(list.id);
     mergedLists.push(mergeList(list, baseListsById[list.id], remoteListsById[list.id]));
   });
   asLists(R).forEach((list) => {
     if (usedListIds.has(list.id)) return;
+    if (allDeletedLists.has(list.id)) return;
     // Remote-only list: if it was deleted locally, keep it deleted.
     if (baseListsById[list.id] && !localListsById[list.id]) return;
     mergedLists.push(clone(list));
@@ -208,8 +230,6 @@ export function mergeBoards(base, local, remote) {
   const localCards = asCards(L);
   const remoteCards = asCards(R);
   const mergedCards = {};
-  const conflicts = [];
-  let changedLocally = false;
 
   const allIds = new Set([
     ...Object.keys(baseCards),
@@ -248,6 +268,7 @@ export function mergeBoards(base, local, remote) {
   const out = { ...clone(L), lists: cleanedLists, cards: mergedCards };
   if (Array.isArray(L.archivedCards)) out.archivedCards = clone(L.archivedCards);
   if (allDeleted.size > 0) out.deletedCardIds = [...allDeleted].slice(-200);
+  if (allDeletedLists.size > 0) out.deletedListIds = [...allDeletedLists].slice(-100);
 
   return { data: out, conflicts, changedLocally };
 }
