@@ -99,7 +99,6 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
     'card-1': {
       id: 'card-1',
       title: 'Welcome to your plan',
-      description: '',
       priority: 'low',
       completed: false,
       days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'],
@@ -187,6 +186,9 @@ export class StorageManager {
             if (b.cards && typeof b.cards === 'object') {
               Object.keys(b.cards).forEach(cId => {
                 delete b.cards[cId].cover;
+                if ('description' in b.cards[cId] && (!b.cards[cId].description || !b.cards[cId].description.trim())) {
+                  delete b.cards[cId].description;
+                }
               });
             }
           });

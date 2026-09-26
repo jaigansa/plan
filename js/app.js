@@ -1102,7 +1102,6 @@ class KanbanApp {
     data.cards[id] = {
       id,
       title,
-      description: '',
       priority: priority || '',
       completed: false,
       days: (explicitDays && Array.isArray(explicitDays)) ? explicitDays : ['M', 'T', 'W', 'R', 'F', 'S', 'U'],
