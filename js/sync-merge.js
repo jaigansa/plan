@@ -74,8 +74,13 @@ function mergeCard(id, base, local, remote) {
     };
   }
 
-  // Deleted remotely, still here locally -> keep it, we are the only change.
+  // Deleted remotely, still here locally
   if (r === null) {
+    if (same(l, b)) {
+      // Local did not modify it; remote deleted it -> respect the remote delete.
+      return { card: null, changedLocally: false, conflict: null };
+    }
+    // Local modified it while remote deleted it -> keep local edit.
     return { card: clone(l), changedLocally: !same(l, b), conflict: null };
   }
 
@@ -85,6 +90,7 @@ function mergeCard(id, base, local, remote) {
 function mergeFields(id, l, r, b) {
   const out = clone(l);
   let conflict = null;
+  let changedLocally = false;
   const fields = {};
 
   CARD_FIELDS_TO_MERGE.forEach((key) => {
@@ -97,10 +103,14 @@ function mergeFields(id, l, r, b) {
       if (rv !== undefined) out[key] = clone(rv);
       return;
     }
-    if (same(rv, bv)) return;              // only local changed -> keep local
+    if (same(rv, bv)) {                     // only local changed -> keep local
+      changedLocally = true;
+      return;
+    }
 
     // Both changed the same field differently. Keep local (the user is looking
     // at it) but record it so the UI can tell them.
+    changedLocally = true;
     fields[key] = { local: clone(lv), remote: clone(rv) };
     if (!conflict) {
       conflict = {
@@ -113,7 +123,7 @@ function mergeFields(id, l, r, b) {
     }
   });
 
-  return { card: out, changedLocally: true, conflict };
+  return { card: out, changedLocally, conflict };
 }
 
 /**
@@ -207,7 +217,15 @@ export function mergeBoards(base, local, remote) {
     ...Object.keys(remoteCards)
   ]);
 
+  const localDeleted = new Set(Array.isArray(L.deletedCardIds) ? L.deletedCardIds : []);
+  const remoteDeleted = new Set(Array.isArray(R.deletedCardIds) ? R.deletedCardIds : []);
+  const allDeleted = new Set([...localDeleted, ...remoteDeleted]);
+
   allIds.forEach((id) => {
+    if (allDeleted.has(id)) {
+      // Explicitly deleted card tombstone - must not be resurrected
+      return;
+    }
     const hasLocal = Object.prototype.hasOwnProperty.call(localCards, id);
     const res = mergeCard(
       id,
@@ -223,11 +241,12 @@ export function mergeBoards(base, local, remote) {
   // Drop references to cards that no longer exist anywhere.
   const cleanedLists = mergedLists.map((list) => ({
     ...list,
-    cardIds: (list.cardIds || []).filter((cid) => mergedCards[cid])
+    cardIds: (list.cardIds || []).filter((cid) => mergedCards[cid] && !allDeleted.has(cid))
   }));
 
   const out = { ...clone(L), lists: cleanedLists, cards: mergedCards };
   if (Array.isArray(L.archivedCards)) out.archivedCards = clone(L.archivedCards);
+  if (allDeleted.size > 0) out.deletedCardIds = [...allDeleted].slice(-200);
 
   return { data: out, conflicts, changedLocally };
 }

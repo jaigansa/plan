@@ -415,6 +415,35 @@ export class StorageManager {
     this.syncToSupabase();
   }
 
+  deleteCard(cardId, targetBoardId = this.activeBoardId) {
+    const board = (this.boards && this.boards[targetBoardId]) || (targetBoardId === this.activeBoardId ? this.data : null);
+    if (!board) return false;
+
+    if (board.cards) {
+      delete board.cards[cardId];
+    }
+    if (Array.isArray(board.lists)) {
+      board.lists.forEach(l => {
+        if (Array.isArray(l.cardIds)) {
+          l.cardIds = l.cardIds.filter(id => id !== cardId);
+        }
+      });
+    }
+
+    if (!Array.isArray(board.deletedCardIds)) {
+      board.deletedCardIds = [];
+    }
+    if (!board.deletedCardIds.includes(cardId)) {
+      board.deletedCardIds.push(cardId);
+      if (board.deletedCardIds.length > 200) {
+        board.deletedCardIds.shift();
+      }
+    }
+
+    this.saveLocal(board);
+    return true;
+  }
+
   getData() {
     return this.data;
   }

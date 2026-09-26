@@ -226,3 +226,25 @@ test('archivedCards and other board fields are preserved', () => {
   assert.equal(data.theme, 'light');
   assert.equal(data.archivedCards.length, 1);
 });
+
+test('a card deleted remotely and untouched locally stays deleted', () => {
+  const base = { lists: [list('L1', ['a', 'b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+  const local = { lists: [list('L1', ['a', 'b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+  const remote = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a' } }) };
+
+  const { data, changedLocally } = mergeBoards(base, local, remote);
+  assert.equal(data.cards.b, undefined, 'untouched card deleted remotely must stay deleted');
+  assert.deepEqual(data.lists[0].cardIds, ['a']);
+  assert.equal(changedLocally, false);
+});
+
+test('deletedCardIds tombstone prevents resurrection even without base snapshot', () => {
+  const base = null;
+  const local = { lists: [list('L1', ['a'])], cards: cards({ a: { id: 'a' } }), deletedCardIds: ['b'] };
+  const remote = { lists: [list('L1', ['a', 'b'])], cards: cards({ a: { id: 'a' }, b: { id: 'b' } }) };
+
+  const { data } = mergeBoards(base, local, remote);
+  assert.equal(data.cards.b, undefined, 'deletedCardIds tombstone must prevent remote resurrection');
+  assert.deepEqual(data.lists[0].cardIds, ['a']);
+  assert.ok(data.deletedCardIds.includes('b'));
+});

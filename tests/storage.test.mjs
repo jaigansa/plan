@@ -462,5 +462,21 @@ test('fresh mobile device cleanly adopts cloud board without demo card pollution
   assert.equal(upsertCalled, false, 'fresh adoption must not re-upload demo cards to cloud');
 });
 
+test('deleteCard permanently removes card, clears from list, and records tombstone', async () => {
+  const { manager } = await freshStart();
+  const data = manager.getData();
+  assert.ok(data.cards['card-1'], 'card-1 exists initially');
+
+  const res = manager.deleteCard('card-1');
+  assert.equal(res, true);
+
+  const updated = manager.getData();
+  assert.equal(updated.cards['card-1'], undefined, 'card-1 must be removed from cards map');
+  const todoList = updated.lists.find(l => l.id === 'list-todo');
+  assert.ok(!todoList.cardIds.includes('card-1'), 'card-1 must be removed from list.cardIds');
+  assert.ok(Array.isArray(updated.deletedCardIds), 'deletedCardIds array exists');
+  assert.ok(updated.deletedCardIds.includes('card-1'), 'card-1 is recorded in deletedCardIds tombstone');
+});
+
 
 

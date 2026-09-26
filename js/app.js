@@ -978,9 +978,18 @@ class KanbanApp {
     const listIndex = data.lists.findIndex(l => l.id === listId);
     if (listIndex > -1) {
       const [removedList] = data.lists.splice(listIndex, 1);
+      if (!Array.isArray(data.deletedCardIds)) {
+        data.deletedCardIds = [];
+      }
       removedList.cardIds.forEach(cId => {
         delete data.cards[cId];
+        if (!data.deletedCardIds.includes(cId)) {
+          data.deletedCardIds.push(cId);
+        }
       });
+      if (data.deletedCardIds.length > 200) {
+        data.deletedCardIds = data.deletedCardIds.slice(-200);
+      }
       this.storage.saveLocal(data);
       this.renderBoard();
     }
@@ -1029,6 +1038,9 @@ class KanbanApp {
 
     const id = 'card-' + Date.now();
     const now = new Date().toISOString();
+    if (Array.isArray(data.deletedCardIds)) {
+      data.deletedCardIds = data.deletedCardIds.filter(cid => cid !== id);
+    }
     data.cards[id] = {
       id,
       title,
@@ -1080,12 +1092,7 @@ class KanbanApp {
   }
 
   deleteCard(cardId) {
-    const data = this.storage.getData();
-    delete data.cards[cardId];
-    data.lists.forEach(list => {
-      list.cardIds = list.cardIds.filter(id => id !== cardId);
-    });
-    this.storage.saveLocal(data);
+    this.storage.deleteCard(cardId);
     this.renderBoard();
   }
 
