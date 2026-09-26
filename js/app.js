@@ -11,6 +11,7 @@ import { DndController } from './dnd.js';
 import { ThemeManager } from './theme.js';
 import { escapeHtml, PRIORITIES, ModalHelper } from './utils.js';
 import { NotificationManager, DAY_INFO } from './notifications.js';
+import { generateQRCodeSVG } from './qrcode.js';
 
 class KanbanApp {
   constructor() {
@@ -25,6 +26,7 @@ class KanbanApp {
   }
 
   init() {
+    this.checkSyncHash();
     this.setupBoardSwitcher();
     this.renderBoard();
     this.setupGlobalEvents();
@@ -46,22 +48,81 @@ class KanbanApp {
     });
   }
 
+  checkSyncHash() {
+    try {
+      const hash = window.location.hash || '';
+      if (hash.startsWith('#sync=')) {
+        const raw = decodeURIComponent(hash.slice(6));
+        let jsonStr;
+        try {
+          jsonStr = decodeURIComponent(escape(atob(raw)));
+        } catch {
+          jsonStr = atob(raw);
+        }
+        const decoded = JSON.parse(jsonStr);
+        if (decoded && decoded.url && decoded.key) {
+          this.storage.saveSupabaseConfig(decoded);
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse #sync hash from URL:', e);
+    }
+  }
+
   updateCloudStatusBadge(status) {
     const badge = document.getElementById('cloud-status-badge');
-    if (!badge) return;
+    const headerPill = document.getElementById('header-sync-status');
 
-    badge.className = 'status-badge ' + (status.online ? 'online' : 'offline');
-    const textEl = badge.querySelector('.badge-text');
-    if (textEl) textEl.textContent = status.message;
+    let stateClass = 'offline';
+    let iconName = 'hard-drive';
+    let pillText = 'Local';
 
-    // Rebuild the icon node so lucide re-renders it for the new state.
-    const existing = badge.querySelector('svg.lucide, i[data-lucide]');
-    if (existing) {
-      const icon = document.createElement('i');
-      icon.setAttribute('data-lucide', status.online ? 'cloud' : 'hard-drive');
-      existing.replaceWith(icon);
-      if (window.lucide) window.lucide.createIcons();
+    if (status.syncing) {
+      stateClass = 'syncing';
+      iconName = 'refresh-cw';
+      pillText = 'Syncing...';
+    } else if (status.online) {
+      stateClass = 'online';
+      iconName = 'cloud';
+      pillText = 'Synced';
+    } else if (status.message && (status.message.includes('failed') || status.message.includes('Error') || status.message.includes('offline'))) {
+      stateClass = 'error';
+      iconName = 'alert-circle';
+      pillText = 'Sync Error';
     }
+
+    if (badge) {
+      badge.className = 'status-badge ' + (status.online ? 'online' : 'offline');
+      const textEl = badge.querySelector('.badge-text');
+      if (textEl) textEl.textContent = status.message;
+
+      const existing = badge.querySelector('svg.lucide, i[data-lucide]');
+      if (existing) {
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', status.online ? 'cloud' : 'hard-drive');
+        existing.replaceWith(icon);
+      }
+    }
+
+    if (headerPill) {
+      headerPill.className = `header-sync-pill ${stateClass}`;
+      headerPill.title = `Storage: ${status.message || 'Local Storage'} (click to configure)`;
+      const pillTextEl = headerPill.querySelector('.sync-pill-text');
+      if (pillTextEl) pillTextEl.textContent = pillText;
+
+      const existingIcon = headerPill.querySelector('svg.lucide, i[data-lucide]');
+      if (existingIcon) {
+        const newIcon = document.createElement('i');
+        newIcon.setAttribute('data-lucide', iconName);
+        if (status.syncing) newIcon.classList.add('spin-icon');
+        existingIcon.replaceWith(newIcon);
+      }
+    }
+
+    if (window.lucide) window.lucide.createIcons();
   }
 
   // --- Multi-Board Switcher ---
@@ -228,7 +289,7 @@ class KanbanApp {
     const sbBoardIdInput = document.getElementById('sb-board-id');
     const saveCloudBtn = document.getElementById('btn-save-settings');
 
-    ModalHelper.bind(settingsModal, 'btn-open-settings', 'settings-close-btn', () => {
+    const populateSettings = () => {
       const config = this.storage.loadSupabaseConfig();
       const currentBoard = this.storage.getData();
       if (sbUrlInput) sbUrlInput.value = config.url || '';
@@ -237,7 +298,141 @@ class KanbanApp {
         sbBoardIdInput.value = currentBoard?.syncId || '';
         sbBoardIdInput.placeholder = this.storage.getSyncBoardId(this.storage.getActiveBoardId());
       }
-    });
+      const syncCopiedMsg = document.getElementById('sync-link-copied-msg');
+      if (syncCopiedMsg) syncCopiedMsg.classList.add('hidden');
+      const syncQrBox = document.getElementById('sync-qr-box');
+      if (syncQrBox) syncQrBox.classList.add('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    ModalHelper.bind(settingsModal, 'btn-open-settings', 'settings-close-btn', populateSettings);
+    ModalHelper.bind(settingsModal, 'header-sync-status', null, populateSettings);
+
+    const showQrBtn = document.getElementById('btn-show-qr');
+    const hideQrBtn = document.getElementById('btn-hide-qr');
+    const syncQrBox = document.getElementById('sync-qr-box');
+    const syncQrFrame = document.getElementById('sync-qr-frame');
+    const syncQrLocalhostAlert = document.getElementById('sync-qr-localhost-alert');
+
+    const getPairingConfig = () => {
+      const saved = this.storage.loadSupabaseConfig() || {};
+      const url = ((sbUrlInput ? sbUrlInput.value : '') || saved.url || '').trim();
+      const key = ((sbKeyInput ? sbKeyInput.value : '') || saved.key || '').trim();
+      const boardId = ((sbBoardIdInput ? sbBoardIdInput.value : '') || saved.boardId || '').trim();
+      if (sbUrlInput && !sbUrlInput.value && url) sbUrlInput.value = url;
+      if (sbKeyInput && !sbKeyInput.value && key) sbKeyInput.value = key;
+      if (sbBoardIdInput && !sbBoardIdInput.value && boardId) sbBoardIdInput.value = boardId;
+      return { url, key, boardId, mode: 'board' };
+    };
+
+    const buildPairingLink = () => {
+      const config = getPairingConfig();
+      if (!config.url || !config.key) return null;
+      const payload = JSON.stringify(config);
+      let encoded;
+      try {
+        encoded = btoa(unescape(encodeURIComponent(payload)));
+      } catch {
+        encoded = btoa(payload);
+      }
+      return `${window.location.origin}${window.location.pathname}#sync=${encodeURIComponent(encoded)}`;
+    };
+
+    if (showQrBtn) {
+      showQrBtn.addEventListener('click', () => {
+        const link = buildPairingLink();
+        if (!link) {
+          if (sbUrlInput && !sbUrlInput.value) sbUrlInput.focus();
+          else if (sbKeyInput && !sbKeyInput.value) sbKeyInput.focus();
+          alert('Please enter your Supabase Project URL and Anon Key first.');
+          return;
+        }
+
+        try {
+          const svgMarkup = generateQRCodeSVG(link, { scalable: true });
+          if (syncQrFrame) {
+            syncQrFrame.innerHTML = svgMarkup;
+          }
+          if (syncQrLocalhostAlert) {
+            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            syncQrLocalhostAlert.classList.toggle('hidden', !isLocal);
+          }
+          if (syncQrBox) {
+            syncQrBox.classList.remove('hidden');
+            if (window.lucide) window.lucide.createIcons();
+            syncQrBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        } catch (err) {
+          console.error('Failed to generate QR Code:', err);
+          alert('Could not generate QR code: ' + (err.message || 'Unknown error'));
+        }
+      });
+    }
+
+    if (hideQrBtn) {
+      hideQrBtn.addEventListener('click', () => {
+        if (syncQrBox) syncQrBox.classList.add('hidden');
+      });
+    }
+
+    const toggleQrContrastBtn = document.getElementById('btn-toggle-qr-contrast');
+    const toggleQrContrastLabel = document.getElementById('btn-toggle-qr-contrast-label');
+    if (toggleQrContrastBtn && syncQrFrame) {
+      toggleQrContrastBtn.addEventListener('click', () => {
+        syncQrFrame.classList.toggle('qr-contrast-high');
+        const isHigh = syncQrFrame.classList.contains('qr-contrast-high');
+        if (toggleQrContrastLabel) {
+          toggleQrContrastLabel.textContent = isHigh ? 'Terminal Mode' : 'Invert Colors';
+        }
+      });
+    }
+
+    const copySyncLinkBtn = document.getElementById('btn-copy-sync-link');
+    const syncCopiedMsg = document.getElementById('sync-link-copied-msg');
+    if (copySyncLinkBtn) {
+      copySyncLinkBtn.addEventListener('click', async () => {
+        const link = buildPairingLink();
+        if (!link) {
+          if (sbUrlInput && !sbUrlInput.value) sbUrlInput.focus();
+          else if (sbKeyInput && !sbKeyInput.value) sbKeyInput.focus();
+          alert('Please enter your Supabase Project URL and Anon Key first.');
+          return;
+        }
+
+        let copied = false;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(link);
+            copied = true;
+          } catch (e) {
+            copied = false;
+          }
+        }
+        if (!copied) {
+          const ta = document.createElement('textarea');
+          ta.value = link;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
+            copied = true;
+          } catch (e) {
+            copied = false;
+          }
+          document.body.removeChild(ta);
+        }
+
+        if (syncCopiedMsg) {
+          syncCopiedMsg.classList.remove('hidden');
+          if (window.lucide) window.lucide.createIcons();
+          setTimeout(() => {
+            syncCopiedMsg.classList.add('hidden');
+          }, 6000);
+        }
+      });
+    }
 
     if (saveCloudBtn) {
       saveCloudBtn.addEventListener('click', () => {

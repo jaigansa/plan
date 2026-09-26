@@ -31,6 +31,11 @@
     </div>
 
     <div class="header-right">
+      <!-- Sync Status Indicator Pill (Desktop + Mobile) -->
+      <button id="header-sync-status" class="header-sync-pill offline" title="Storage: Local Only (click to configure Cloud Sync)">
+        <i data-lucide="hard-drive"></i> <span class="sync-pill-text">Local</span>
+      </button>
+
       <!-- Settings -->
       <button id="btn-open-settings" class="icon-btn primary-header-btn" title="Settings & Tools">
         <i data-lucide="settings"></i> <span>Settings</span>
@@ -148,20 +153,53 @@
 
           <div class="settings-group">
             <label for="sb-url">Supabase Project URL</label>
-            <input type="text" id="sb-url" placeholder="https://xyz.supabase.co" autocomplete="off" />
+            <input type="text" id="sb-url" placeholder="https://xyz.supabase.co" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
 
           <div class="settings-group">
             <label for="sb-key">Supabase Anon Key</label>
-            <input type="password" id="sb-key" placeholder="eyJhbGciOi..." autocomplete="off" />
+            <input type="password" id="sb-key" placeholder="eyJhbGciOi..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
 
           <div class="settings-group">
             <label for="sb-board-id">Board Sync ID</label>
-            <input type="text" id="sb-board-id" placeholder="default" autocomplete="off" />
+            <input type="text" id="sb-board-id" placeholder="default" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
 
-          <button type="button" id="btn-save-settings" class="btn-confirm-add">Save Cloud Settings</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button type="button" id="btn-save-settings" class="btn-confirm-add" style="flex: 1; min-width: 100px;">
+              <i data-lucide="save"></i> <span>Save</span>
+            </button>
+            <button type="button" id="btn-show-qr" class="icon-btn" style="flex: 1; min-width: 120px; justify-content: center; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary);" title="Display QR code to scan with your phone camera">
+              <i data-lucide="qr-code"></i> <span>Show QR Code</span>
+            </button>
+            <button type="button" id="btn-copy-sync-link" class="icon-btn" style="flex: 1; min-width: 120px; justify-content: center; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary);" title="Copy sync link to clipboard">
+              <i data-lucide="copy"></i> <span>Copy Link</span>
+            </button>
+          </div>
+
+          <div id="sync-link-copied-msg" class="sync-link-msg hidden" style="margin-top: 8px; font-size: 0.75rem; color: var(--accent-green, #10b981); align-items: center; gap: 6px;">
+            <i data-lucide="check-circle"></i> <span>Sync link copied! Open on your mobile browser to sync instantly.</span>
+          </div>
+
+          <!-- QR Code Display Box -->
+          <div id="sync-qr-box" class="sync-qr-card hidden">
+            <div class="sync-qr-frame" id="sync-qr-frame"></div>
+            <p class="sync-qr-tip">
+              Scan with your phone camera to pair and sync this board instantly.
+            </p>
+            <div id="sync-qr-localhost-alert" class="sync-qr-alert hidden">
+              ⚠️ <strong>Localhost notice:</strong> Your phone cannot reach <code>localhost</code> directly. Open this page on desktop using your Wi-Fi LAN IP (e.g. <code>http://192.168.x.x:8080</code>) before scanning.
+            </div>
+            <div class="sync-qr-toolbar">
+              <button type="button" id="btn-toggle-qr-contrast" class="icon-btn-sm" style="font-size: 0.75rem;" title="Toggle QR code color scheme">
+                <i data-lucide="sun-moon"></i> <span id="btn-toggle-qr-contrast-label">Invert Colors</span>
+              </button>
+              <button type="button" id="btn-hide-qr" class="icon-btn-sm" style="font-size: 0.75rem;">
+                <i data-lucide="x"></i> <span>Hide QR</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Data Backup & Restore & Exports -->

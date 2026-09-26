@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check js/app.js && node --check js/storage.js && node --check js/sync-merge.js && node --check js/dnd.js && node --check js/modal.js && node --check js/notifications.js && node --check js/reminder-core.js && node --check js/plan-store.js && node --check js/theme.js && node --check js/utils.js && node --check sw.js"
+    "check": "node --check js/app.js && node --check js/storage.js && node --check js/sync-merge.js && node --check js/dnd.js && node --check js/modal.js && node --check js/notifications.js && node --check js/reminder-core.js && node --check js/plan-store.js && node --check js/theme.js && node --check js/utils.js && node --check js/qrcode.js && node --check sw.js"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.5"

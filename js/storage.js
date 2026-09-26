@@ -47,10 +47,28 @@ function formatSyncErrorMessage(err, prefix = 'Cloud sync failed') {
   return `${prefix}: ${msg}`;
 }
 
+export function isDefaultStarterBoard(board) {
+  if (!board) return false;
+  if (board.isDefault === true) return true;
+  const cards = board.cards || {};
+  const keys = Object.keys(cards);
+  if (keys.length === 5 &&
+      cards['card-1'] &&
+      cards['card-2'] &&
+      cards['card-3'] &&
+      cards['card-4'] &&
+      cards['card-truck'] &&
+      (!board.archivedCards || board.archivedCards.length === 0)) {
+    return true;
+  }
+  return false;
+}
+
 export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') => ({
   id,
   title,
   theme: 'dark',
+  isDefault: true,
   lists: [
     {
       id: 'list-todo',
@@ -388,6 +406,9 @@ export class StorageManager {
   saveLocal(data, record = true) {
     if (record) {
       this.recordHistory();
+      if (data && data.isDefault) {
+        delete data.isDefault;
+      }
     }
     this.data = data;
     this.saveAllBoards();
@@ -699,7 +720,13 @@ export class StorageManager {
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            this.notifyStatus({ online: true, syncing: false, message: 'Supabase Connected' });
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            this.notifyStatus({ online: false, syncing: false, message: 'Realtime disconnected - retrying' });
+          }
+        });
     } catch (e) {
       console.warn('Realtime subscription failed:', e);
     }
@@ -727,11 +754,25 @@ export class StorageManager {
 
       const remoteContent = data ? parseBoardContent(data.content) : null;
       if (remoteContent) {
-        const base = this.getSyncSnapshot(boardSyncId);
-        const { data: merged, conflicts, changedLocally } =
-          mergeBoards(base, targetBoard, remoteContent);
+        let merged;
+        let conflicts = [];
+        let changedLocally = false;
 
-        merged.id = targetBoardId;
+        if (isDefaultStarterBoard(targetBoard)) {
+          // Untouched default starter board on a new device (e.g. mobile).
+          // Cleanly adopt the remote board from cloud without injecting sample demo cards.
+          merged = JSON.parse(JSON.stringify(remoteContent));
+          merged.id = targetBoardId;
+          delete merged.isDefault;
+        } else {
+          const base = this.getSyncSnapshot(boardSyncId);
+          const res = mergeBoards(base, targetBoard, remoteContent);
+          merged = res.data;
+          conflicts = res.conflicts || [];
+          changedLocally = res.changedLocally;
+          merged.id = targetBoardId;
+        }
+
         if (conflicts.length && targetBoardId === this.activeBoardId) {
           this.reportConflicts(conflicts);
         }
@@ -808,6 +849,23 @@ export class StorageManager {
           this.boards[localId] = merged;
           this.setSyncSnapshot(row.id, merged, row.updated_at);
           changed = true;
+        }
+      }
+
+      // If active board is an untouched starter board, and remote has real boards,
+      // switch to the first real remote board so a mobile user sees their cloud content.
+      if (isDefaultStarterBoard(this.data) && data.length > 0) {
+        const matchingCurrent = data.some(r => r.id === this.getSyncBoardId(this.activeBoardId));
+        if (!matchingCurrent) {
+          const firstRemoteRow = data[0];
+          const firstContent = parseBoardContent(firstRemoteRow.content);
+          const targetKey = (firstContent && firstContent.id) || firstRemoteRow.id;
+          if (this.boards[targetKey]) {
+            delete this.boards[this.activeBoardId];
+            this.activeBoardId = targetKey;
+            this.data = this.boards[targetKey];
+            changed = true;
+          }
         }
       }
 
@@ -1174,15 +1232,36 @@ export class StorageManager {
     if (this._queueListenersBound) return;
     this._queueListenersBound = true;
 
+    const onWakeOrReconnect = () => {
+      if (this.isConnected() && (typeof navigator === 'undefined' || navigator.onLine !== false)) {
+        this.notifyStatus({ online: true, syncing: true, message: 'Syncing with Supabase...' });
+        const activeBoardId = this.activeBoardId;
+        const boardSyncId = this.getSyncBoardId(activeBoardId);
+        this.subscribeRealtime(boardSyncId, activeBoardId);
+        if (this.isCardsMode()) {
+          this.fetchSharedCards(activeBoardId);
+        } else {
+          this.fetchFromSupabase(activeBoardId);
+          this.syncAllBoardsFromSupabase();
+        }
+      }
+      this.flushQueue();
+    };
+
     window.addEventListener('online', () => {
       this.notifyStatus({ online: true, syncing: false, message: 'Back online - syncing' });
-      this.flushQueue();
+      onWakeOrReconnect();
     });
     window.addEventListener('offline', () => {
       this.notifyStatus({ online: false, syncing: false, message: 'Offline - changes saved locally' });
     });
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') this.flushQueue();
+      if (document.visibilityState === 'visible') {
+        onWakeOrReconnect();
+      }
+    });
+    window.addEventListener('focus', () => {
+      onWakeOrReconnect();
     });
     this._queueTimer = setInterval(() => this.flushQueue(), 60000);
     if (this._queueTimer && typeof this._queueTimer.unref === 'function') {

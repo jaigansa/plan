@@ -72,14 +72,16 @@ async function wipeDb() {
 
 const BOARDS_KEY = 'kanban_boards_v2';
 const ACTIVE_KEY = 'kanban_active_board_v2';
-const wait = (ms = 40) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms = 100) => new Promise((r) => setTimeout(r, ms));
 
 /** A fresh StorageManager over a clean database. */
 async function freshStart() {
   await wipeDb();
   const env = installGlobals();
   const StorageManager = await loadStorageClass();
-  return { manager: new StorageManager(), env, StorageManager };
+  const manager = new StorageManager();
+  await wait(80);
+  return { manager, env, StorageManager };
 }
 
 /** Throw away localStorage and boot again, as if site data was cleared. */
@@ -406,6 +408,58 @@ test('per-board sync isolation: distinct sync IDs and no cross-board overwrites'
   assert.ok(allBoards[b2Id].cards['c-remote-b2'], 'board 2 in storage received remote card');
   assert.ok(allBoards[b2Id].cards['c-b2'], 'board 2 local card is preserved');
   assert.ok(allBoards[b2Id].lists.some(l => l.id === 'remote-list-b2'), 'board 2 in storage received remote list');
+});
+
+test('fresh mobile device cleanly adopts cloud board without demo card pollution', async () => {
+  const { isDefaultStarterBoard } = await import('../js/storage.js');
+  const { manager } = await freshStart();
+
+  // Fresh manager starts with default starter board
+  assert.equal(isDefaultStarterBoard(manager.getData()), true, 'fresh board must be recognized as default starter');
+
+  let upsertCalled = false;
+  const remoteBoardContent = {
+    id: 'board-1',
+    title: 'My Work Tasks',
+    lists: [{ id: 'list-w1', title: 'Sprint 1', color: '#10b981', cardIds: ['card-custom-99'] }],
+    cards: {
+      'card-custom-99': { id: 'card-custom-99', title: 'Real Task from Desktop', priority: 'high' }
+    }
+  };
+
+  globalThis.window.supabase = {
+    createClient: () => ({
+      removeChannel: () => {},
+      channel: () => ({ on: () => ({ subscribe: () => {} }) }),
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({
+              data: {
+                content: remoteBoardContent,
+                updated_at: new Date().toISOString()
+              },
+              error: null
+            })
+          })
+        }),
+        upsert: async () => {
+          upsertCalled = true;
+          return { error: null };
+        }
+      })
+    })
+  };
+
+  manager.saveSupabaseConfig({ url: 'https://test.supabase.co', key: 'testkey', boardId: 'board-1' });
+  await wait(80);
+
+  const activeData = manager.getData();
+  assert.equal(activeData.title, 'My Work Tasks');
+  assert.ok(activeData.cards['card-custom-99'], 'remote task must be adopted');
+  assert.equal(activeData.cards['card-truck'], undefined, 'default demo card-truck must NOT be injected into cloud board');
+  assert.equal(activeData.cards['card-1'], undefined, 'default demo card-1 must NOT be injected into cloud board');
+  assert.equal(upsertCalled, false, 'fresh adoption must not re-upload demo cards to cloud');
 });
 
 
