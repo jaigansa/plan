@@ -100,10 +100,14 @@ test('a fresh install gets a board and persists it', async () => {
   assert.ok(env.localStorage.getItem(BOARDS_KEY), 'the default board gets written');
 });
 
-test('the default board has the Plan/Progress/Done/Drop columns', async () => {
+test('the default board has the Plan/Progress/Done/Drop columns and no default cards', async () => {
   const { manager } = await freshStart();
   const titles = Array.from(manager.getData().lists, (l) => l.title);
   assert.deepEqual(titles, ['Plan', 'Progress', 'Done', 'Drop']);
+  assert.deepEqual(manager.getData().cards, {}, 'fresh board has zero default cards');
+  manager.getData().lists.forEach(l => {
+    assert.deepEqual(l.cardIds, [], `column ${l.title} starts with empty cardIds`);
+  });
 });
 
 test('clearing localStorage restores every board from IndexedDB', async () => {
@@ -122,14 +126,15 @@ test('clearing localStorage restores every board from IndexedDB', async () => {
 
 test('a restore keeps the card contents, not just the board shell', async () => {
   const { manager } = await freshStart();
-  manager.data.cards['card-1'].title = 'Edited before the wipe';
+  manager.data.cards['card-custom-1'] = { id: 'card-custom-1', title: 'Edited before the wipe' };
+  manager.data.lists[0].cardIds.push('card-custom-1');
   manager.saveAllBoards();
   await manager.flushBackup();
   await wait();
 
   const { env } = await restartCleared();
   const restored = JSON.parse(env.localStorage.getItem(BOARDS_KEY));
-  assert.equal(restored['board-1'].cards['card-1'].title, 'Edited before the wipe');
+  assert.equal(restored['board-1'].cards['card-custom-1'].title, 'Edited before the wipe');
 });
 
 test('nothing to restore still leaves a usable default board', async () => {
@@ -464,18 +469,22 @@ test('fresh mobile device cleanly adopts cloud board without demo card pollution
 
 test('deleteCard permanently removes card, clears from list, and records tombstone', async () => {
   const { manager } = await freshStart();
-  const data = manager.getData();
-  assert.ok(data.cards['card-1'], 'card-1 exists initially');
+  manager.data.cards['card-test-1'] = { id: 'card-test-1', title: 'Task 1' };
+  manager.data.lists[0].cardIds.push('card-test-1');
+  manager.saveAllBoards();
 
-  const res = manager.deleteCard('card-1');
+  const data = manager.getData();
+  assert.ok(data.cards['card-test-1'], 'card-test-1 exists initially');
+
+  const res = manager.deleteCard('card-test-1');
   assert.equal(res, true);
 
   const updated = manager.getData();
-  assert.equal(updated.cards['card-1'], undefined, 'card-1 must be removed from cards map');
+  assert.equal(updated.cards['card-test-1'], undefined, 'card-test-1 must be removed from cards map');
   const todoList = updated.lists.find(l => l.id === 'list-todo');
-  assert.ok(!todoList.cardIds.includes('card-1'), 'card-1 must be removed from list.cardIds');
+  assert.ok(!todoList.cardIds.includes('card-test-1'), 'card-test-1 must be removed from list.cardIds');
   assert.ok(Array.isArray(updated.deletedCardIds), 'deletedCardIds array exists');
-  assert.ok(updated.deletedCardIds.includes('card-1'), 'card-1 is recorded in deletedCardIds tombstone');
+  assert.ok(updated.deletedCardIds.includes('card-test-1'), 'card-test-1 is recorded in deletedCardIds tombstone');
 });
 
 

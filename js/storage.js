@@ -74,7 +74,7 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
       id: 'list-todo',
       title: 'Plan',
       color: '#3b82f6',
-      cardIds: ['card-1']
+      cardIds: []
     },
     {
       id: 'list-in-progress',
@@ -95,17 +95,7 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
       cardIds: []
     }
   ],
-  cards: {
-    'card-1': {
-      id: 'card-1',
-      title: 'Welcome to your plan',
-      priority: 'low',
-      completed: false,
-      days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'],
-      lastNotifiedAt: 0,
-      createdAt: new Date().toISOString()
-    }
-  },
+  cards: {},
   archivedCards: [],
   deletedCardIds: []
 });
@@ -177,13 +167,25 @@ export class StorageManager {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-          const legacyDemoIds = new Set(['card-truck', 'card-2', 'card-3', 'card-4']);
+          const legacyDemoIds = new Set(['card-truck', 'card-2', 'card-3', 'card-4', 'card-1']);
           Object.keys(parsed).forEach(k => {
             const b = parsed[k];
             if (!b.archivedCards) b.archivedCards = [];
             if (!Array.isArray(b.deletedCardIds)) b.deletedCardIds = [];
             b.deletedCardIds = b.deletedCardIds.filter(id => !legacyDemoIds.has(id));
             if (b.cards && typeof b.cards === 'object') {
+              legacyDemoIds.forEach(demoId => {
+                if (b.cards[demoId] && (demoId !== 'card-1' || b.cards['card-1'].title === 'Welcome to your plan')) {
+                  delete b.cards[demoId];
+                  if (Array.isArray(b.lists)) {
+                    b.lists.forEach(l => {
+                      if (Array.isArray(l.cardIds)) {
+                        l.cardIds = l.cardIds.filter(cid => cid !== demoId);
+                      }
+                    });
+                  }
+                }
+              });
               Object.keys(b.cards).forEach(cId => {
                 delete b.cards[cId].cover;
                 if ('description' in b.cards[cId] && (!b.cards[cId].description || !b.cards[cId].description.trim())) {
