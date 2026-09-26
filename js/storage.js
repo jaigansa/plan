@@ -718,6 +718,15 @@ export class StorageManager {
   subscribeRealtime(boardSyncId, targetBoardId = this.activeBoardId) {
     if (!this.supabaseClient) return;
 
+    if (this.realtimeChannel && this.supabaseClient) {
+      try {
+        this.supabaseClient.removeChannel(this.realtimeChannel);
+      } catch (e) {
+        console.warn('Channel cleanup in subscribeRealtime:', e);
+      }
+      this.realtimeChannel = null;
+    }
+
     // Shared-cards mode listens on the per-card table and merges single cards.
     if (this.isCardsMode()) {
       try {
@@ -785,7 +794,7 @@ export class StorageManager {
           if (status === 'SUBSCRIBED') {
             this.notifyStatus({ online: true, syncing: false, message: 'Supabase Connected' });
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            this.notifyStatus({ online: false, syncing: false, message: 'Realtime disconnected - retrying' });
+            this.notifyStatus({ online: false, syncing: false, message: 'Realtime disconnected - check Realtime publication & RLS' });
           }
         });
     } catch (e) {
@@ -925,6 +934,7 @@ export class StorageManager {
             delete this.boards[this.activeBoardId];
             this.activeBoardId = targetKey;
             this.data = this.boards[targetKey];
+            this.subscribeRealtime(this.getSyncBoardId(targetKey), targetKey);
             changed = true;
           }
         }

@@ -61,7 +61,13 @@ class KanbanApp {
         }
         const decoded = JSON.parse(jsonStr);
         if (decoded && decoded.url && decoded.key) {
-          this.storage.saveSupabaseConfig(decoded);
+          if (decoded.boardId) {
+            this.storage.setBoardSyncId(this.storage.getActiveBoardId(), decoded.boardId);
+          }
+          this.storage.saveSupabaseConfig({
+            ...decoded,
+            storageMode: 'cloud'
+          });
           if (window.history && window.history.replaceState) {
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
           }
@@ -368,11 +374,12 @@ class KanbanApp {
       const saved = this.storage.loadSupabaseConfig() || {};
       const url = ((sbUrlInput ? sbUrlInput.value : '') || saved.url || '').trim();
       const key = ((sbKeyInput ? sbKeyInput.value : '') || saved.key || '').trim();
-      const boardId = ((sbBoardIdInput ? sbBoardIdInput.value : '') || saved.boardId || '').trim();
+      const currentSyncBoardId = this.storage.getSyncBoardId(this.storage.getActiveBoardId());
+      const boardId = ((sbBoardIdInput ? sbBoardIdInput.value : '') || saved.boardId || currentSyncBoardId || '').trim();
       if (sbUrlInput && !sbUrlInput.value && url) sbUrlInput.value = url;
       if (sbKeyInput && !sbKeyInput.value && key) sbKeyInput.value = key;
       if (sbBoardIdInput && !sbBoardIdInput.value && boardId) sbBoardIdInput.value = boardId;
-      return { url, key, boardId, mode: 'board' };
+      return { url, key, boardId, mode: 'board', storageMode: 'cloud' };
     };
 
     const buildPairingLink = () => {

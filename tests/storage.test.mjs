@@ -573,3 +573,46 @@ test('deleteList permanently removes list, clears cards, and records tombstones'
   assert.ok(updated.deletedCardIds.includes('card-inside-list'), 'card recorded in deletedCardIds');
 });
 
+test('subscribeRealtime cleans up existing channel before creating new one', async () => {
+  const { manager } = await freshStart();
+  let removedChannel = null;
+  let channelsCreated = [];
+
+  globalThis.window.supabase = {
+    createClient: () => ({
+      removeChannel: (ch) => { removedChannel = ch; },
+      channel: (name) => {
+        channelsCreated.push(name);
+        return {
+          on: () => ({
+            subscribe: () => ({ id: name })
+          })
+        };
+      },
+      from: () => ({
+        select: () => ({
+          maybeSingle: async () => ({ data: null, error: null }),
+          eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) })
+        }),
+        upsert: async () => ({ error: null })
+      })
+    })
+  };
+
+  manager.saveSupabaseConfig({
+    url: 'https://demo.supabase.co',
+    key: 'demo-key',
+    storageMode: 'cloud'
+  });
+
+  assert.equal(channelsCreated.length, 1);
+  assert.equal(channelsCreated[0], 'board-board-1');
+
+  // Subscribing again (e.g. board switch or wake) removes prior channel
+  manager.subscribeRealtime('board-2', 'board-2');
+  assert.ok(removedChannel, 'prior channel was removed');
+  assert.equal(channelsCreated.length, 2);
+  assert.equal(channelsCreated[1], 'board-board-2');
+});
+
+
