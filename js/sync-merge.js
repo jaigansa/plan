@@ -217,8 +217,9 @@ export function mergeBoards(base, local, remote) {
     ...Object.keys(remoteCards)
   ]);
 
-  const localDeleted = new Set(Array.isArray(L.deletedCardIds) ? L.deletedCardIds : []);
-  const remoteDeleted = new Set(Array.isArray(R.deletedCardIds) ? R.deletedCardIds : []);
+  const legacyDemoIds = new Set(['card-truck', 'card-2', 'card-3', 'card-4', 'card-1']);
+  const localDeleted = (Array.isArray(L.deletedCardIds) ? L.deletedCardIds : []).filter(id => !legacyDemoIds.has(id));
+  const remoteDeleted = (Array.isArray(R.deletedCardIds) ? R.deletedCardIds : []).filter(id => !legacyDemoIds.has(id));
   const allDeleted = new Set([...localDeleted, ...remoteDeleted]);
 
   allIds.forEach((id) => {
