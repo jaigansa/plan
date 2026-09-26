@@ -102,11 +102,6 @@ export class DndController {
 
   // --- Card Drag & Drop ---
   handleCardDragStart(e, cardId, listId) {
-    // Strictly forbid card dragging unless initiated from the drag grip handle
-    if (!e.target.closest('.card-drag-grip')) {
-      e.preventDefault();
-      return;
-    }
     if (e.target.closest('input, button, textarea, select, .card-delete-quick-btn')) {
       e.preventDefault();
       return;
@@ -130,7 +125,7 @@ export class DndController {
   }
 
   handleCardDragEnd(e) {
-    if (e.currentTarget) {
+    if (e && e.currentTarget) {
       e.currentTarget.classList.remove('is-dragging');
       if (e.currentTarget.removeAttribute) e.currentTarget.removeAttribute('draggable');
     }
@@ -146,20 +141,26 @@ export class DndController {
     }, 50);
   }
 
-  handleCardContainerDragOver(e) {
+  handleCardContainerDragOver(e, containerOverride = null) {
     if (!this.draggedCardId) return;
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
 
-    const container = e.currentTarget;
-    const afterElement = this.getDragAfterElement(container, '.kanban-card:not(.is-dragging)', e.clientY);
+    let container = containerOverride || e.currentTarget;
+    if (container && !container.classList.contains('cards-container')) {
+      container = container.querySelector('.cards-container') || container;
+    }
+    if (!container) return;
 
+    const afterElement = this.getDragAfterElement(container, '.kanban-card:not(.is-dragging)', e.clientY);
     const placeholder = this.ensureCardPlaceholder();
 
     if (afterElement == null) {
-      container.appendChild(placeholder);
-    } else if (placeholder !== afterElement) {
+      if (container.lastElementChild !== placeholder) {
+        container.appendChild(placeholder);
+      }
+    } else if (placeholder.nextElementSibling !== afterElement) {
       container.insertBefore(placeholder, afterElement);
     }
   }
@@ -174,14 +175,22 @@ export class DndController {
     const sourceListId = this.sourceListId || this.findCardListId(cardId);
     if (!sourceListId) return;
 
-    const container = e.currentTarget;
-    const placeholder = container.querySelector('.card-placeholder');
-    let targetIndex = -1;
+    let container = e.currentTarget;
+    if (container && !container.classList.contains('cards-container')) {
+      container = container.querySelector('.cards-container') || container;
+    }
 
-    if (placeholder) {
-      const cardsInDom = [...container.querySelectorAll('.kanban-card:not(.is-dragging), .card-placeholder')];
-      targetIndex = cardsInDom.indexOf(placeholder);
+    let targetIndex = -1;
+    const placeholder = (container ? container.querySelector('.card-placeholder') : null) || this.cardPlaceholderEl;
+
+    if (placeholder && placeholder.parentNode) {
+      const parentContainer = placeholder.closest('.cards-container') || container;
+      if (parentContainer) {
+        const cardsInDom = [...parentContainer.querySelectorAll('.kanban-card:not(.is-dragging), .card-placeholder')];
+        targetIndex = cardsInDom.indexOf(placeholder);
+      }
       placeholder.remove();
+      this.cardPlaceholderEl = null;
     }
 
     this.app.moveCard(cardId, sourceListId, targetListId, targetIndex);
@@ -195,19 +204,28 @@ export class DndController {
 
   // --- List Drag & Drop ---
   handleListDragStart(e, listId) {
-    // Drag list must strictly originate from the list header, and never from cards, inputs, buttons, or list body
-    if (!e.target.closest('.list-header') || e.target.closest('button, input, textarea, select, .kanban-card, .cards-container, .list-quick-add, .kanban-list-footer')) {
+    if (this.draggedCardId) {
+      e.preventDefault();
+      return;
+    }
+    if (e.target.closest('button, input, textarea, select, .column-color-indicator-btn, .kanban-card, .cards-container, .list-quick-add')) {
       e.preventDefault();
       return;
     }
     this.draggedListId = listId;
     this.draggedCardId = null;
     e.dataTransfer.effectAllowed = 'move';
-    e.currentTarget.classList.add('list-dragging');
+    e.dataTransfer.setData('text/plain', listId);
+    const listEl = e.currentTarget;
+    setTimeout(() => {
+      if (listEl && listEl.classList) {
+        listEl.classList.add('list-dragging');
+      }
+    }, 0);
   }
 
   handleListDragEnd(e) {
-    if (e.currentTarget) {
+    if (e && e.currentTarget) {
       e.currentTarget.classList.remove('list-dragging');
       if (e.currentTarget.removeAttribute) e.currentTarget.removeAttribute('draggable');
     }
@@ -375,15 +393,15 @@ export class DndController {
       this.touchOffsetY = touch.clientY - rect.top;
 
       clearTimeout(this.touchHoldTimer);
-      // Fast, responsive arming when touching the grip handle
+      // Responsive arming when touching the grip handle
       this.touchHoldTimer = setTimeout(() => {
-        this.startTouchDrag(rect);
+        this.startTouchDrag();
       }, 50);
     }, { passive: true });
   }
 
-  startTouchDrag(rect) {
-    if (!this.touchCardEl) return;
+  startTouchDrag() {
+    if (!this.touchCardEl || this.isTouchDragging) return;
     this.isTouchDragging = true;
 
     if (navigator.vibrate) {
@@ -393,6 +411,7 @@ export class DndController {
     // Clean up any stale clones before creating a new one
     document.querySelectorAll('.touch-drag-clone').forEach(el => el.remove());
 
+    const rect = this.touchCardEl.getBoundingClientRect();
     const clone = this.touchCardEl.cloneNode(true);
     clone.classList.add('touch-drag-clone');
     clone.style.width = `${rect.width}px`;
@@ -410,6 +429,14 @@ export class DndController {
     document.body.appendChild(clone);
     this.touchCloneEl = clone;
     this.touchCardEl.classList.add('is-dragging');
+
+    // Insert initial placeholder at card's current position in source list
+    const sourceContainer = this.touchCardEl.closest('.cards-container');
+    if (sourceContainer) {
+      this.currentTouchTargetListId = sourceContainer.getAttribute('data-list-id');
+      const placeholder = this.ensureCardPlaceholder();
+      sourceContainer.insertBefore(placeholder, this.touchCardEl);
+    }
   }
 
   handleGlobalTouchMove(e) {
@@ -418,7 +445,7 @@ export class DndController {
 
     // Pill reordering takes priority: only one drag can be armed per touch.
     if (this.isPillDragging) {
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
       this.moveDraggedPill(touch.clientX);
       this.autoScrollPillNav(touch.clientX);
       return;
@@ -426,7 +453,7 @@ export class DndController {
 
     // List reordering takes priority: only one drag can be armed per touch.
     if (this.isTouchListDragging) {
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
       this.moveTouchListClone(touch);
       this.autoScrollBoard(touch);
       this.updateListPlaceholder(touch);
@@ -443,17 +470,30 @@ export class DndController {
       return;
     }
 
+    // A list hold that has not armed yet turns back into a plain scroll.
+    if (this.touchListEl && !this.isTouchListDragging) {
+      if (Math.hypot(touch.clientX - this.touchStartX, touch.clientY - this.touchStartY) > 10) {
+        clearTimeout(this.touchListHoldTimer);
+        this.touchListEl = null;
+        this.touchListId = null;
+      }
+      return;
+    }
+
     if (!this.touchCardEl) return;
 
     const moveDist = Math.hypot(touch.clientX - this.touchStartX, touch.clientY - this.touchStartY);
 
-    if (!this.isTouchDragging && moveDist > 10) {
-      clearTimeout(this.touchHoldTimer);
-      return;
+    if (!this.isTouchDragging) {
+      if (moveDist >= 5) {
+        clearTimeout(this.touchHoldTimer);
+        this.startTouchDrag();
+      } else {
+        return;
+      }
     }
 
-    if (!this.isTouchDragging) return;
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
 
     if (this.touchCloneEl) {
       this.touchCloneEl.style.left = `${touch.clientX - this.touchOffsetX}px`;
@@ -465,7 +505,8 @@ export class DndController {
     const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!elemBelow) return;
 
-    const cardsContainer = elemBelow.closest('.cards-container');
+    const listEl = elemBelow.closest('.kanban-list');
+    const cardsContainer = elemBelow.closest('.cards-container') || (listEl ? listEl.querySelector('.cards-container') : null);
     if (cardsContainer) {
       this.currentTouchTargetListId = cardsContainer.getAttribute('data-list-id');
       const afterElement = this.getDragAfterElement(cardsContainer, '.kanban-card:not(.is-dragging)', touch.clientY);
@@ -473,8 +514,10 @@ export class DndController {
       const placeholder = this.ensureCardPlaceholder();
 
       if (afterElement == null) {
-        cardsContainer.appendChild(placeholder);
-      } else if (placeholder !== afterElement) {
+        if (cardsContainer.lastElementChild !== placeholder) {
+          cardsContainer.appendChild(placeholder);
+        }
+      } else if (placeholder.nextElementSibling !== afterElement) {
         cardsContainer.insertBefore(placeholder, afterElement);
       }
     }
@@ -509,22 +552,24 @@ export class DndController {
       this.touchCardEl.classList.remove('is-dragging');
     }
 
-    // Use the tracked placeholder, not a document-wide lookup: a lookup can
-    // return the placeholder parked in the source column and compute the drop
-    // index against the wrong container.
     const placeholder = this.cardPlaceholderEl;
-    if (this.isTouchDragging && placeholder && this.currentTouchTargetListId && this.touchCardId) {
-      const container = placeholder.closest('.cards-container');
-      if (container) {
-        const cardsInDom = [...container.querySelectorAll('.kanban-card:not(.is-dragging), .card-placeholder')];
-        const targetIndex = cardsInDom.indexOf(placeholder);
+    if (this.isTouchDragging && this.touchCardId) {
+      let targetIndex = -1;
+      let targetListId = this.currentTouchTargetListId;
+
+      if (placeholder && placeholder.parentNode) {
+        const container = placeholder.closest('.cards-container');
+        if (container) {
+          targetListId = container.getAttribute('data-list-id') || targetListId;
+          const cardsInDom = [...container.querySelectorAll('.kanban-card:not(.is-dragging), .card-placeholder')];
+          targetIndex = cardsInDom.indexOf(placeholder);
+        }
         placeholder.remove();
         this.cardPlaceholderEl = null;
+      }
 
+      if (targetListId) {
         const sourceListId = this.touchSourceListId || this.findCardListId(this.touchCardId);
-        // Trust the container the placeholder actually sits in, so the list and
-        // the index can never disagree.
-        const targetListId = container.getAttribute('data-list-id') || this.currentTouchTargetListId;
         this.app.moveCard(this.touchCardId, sourceListId, targetListId, targetIndex);
       }
     }
@@ -553,16 +598,15 @@ export class DndController {
     document.querySelectorAll('.touch-drag-clone').forEach(el => el.remove());
   }
 
-  // --- Touch List Reordering (Tablet / non-touch-pointer viewports) ---
+  // --- Touch List Reordering (Mobile / Tablet) ---
   attachListTouchEvents(listEl, listId) {
-    if (this.isMobileViewport()) return;
     const header = listEl.querySelector('.list-header');
     if (!header) return;
 
     header.addEventListener('touchstart', (e) => {
       // Drag must originate from the list header, and never from an
       // interactive control (the title input is used for renaming).
-      if (e.target.closest('button, input, textarea, select, .kanban-card, .cards-container, .list-quick-add')) return;
+      if (e.target.closest('button, input, textarea, select, .column-color-indicator-btn, .kanban-card, .cards-container, .list-quick-add')) return;
       if (e.touches.length !== 1) return;
 
       const touch = e.touches[0];
@@ -576,7 +620,7 @@ export class DndController {
       this.touchListOffsetY = touch.clientY - rect.top;
 
       clearTimeout(this.touchListHoldTimer);
-      this.touchListHoldTimer = setTimeout(() => this.startTouchListDrag(rect), 150);
+      this.touchListHoldTimer = setTimeout(() => this.startTouchListDrag(rect), 250);
     }, { passive: true });
   }
 

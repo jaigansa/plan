@@ -274,6 +274,16 @@ class KanbanApp {
     this.boardEl.addEventListener('drop', (e) => {
       this.dnd.handleBoardDrop(e, this.boardEl);
     });
+
+    // Global mouseup cleanup for unstarted drags
+    window.addEventListener('mouseup', () => {
+      if (!this.dnd.isDragging) {
+        document.querySelectorAll('.kanban-card[draggable="true"]').forEach(el => el.removeAttribute('draggable'));
+      }
+      if (!this.dnd.draggedListId) {
+        document.querySelectorAll('.kanban-list[draggable="true"]').forEach(el => el.removeAttribute('draggable'));
+      }
+    });
   }
 
   setupSettingsModal() {
@@ -790,30 +800,31 @@ class KanbanApp {
       });
     }
 
-    // List dragging is desktop-only and strictly armed from list header (never list body or cards)
-    if (!this.dnd.isMobileViewport()) {
-      headerEl.addEventListener('mousedown', (e) => {
-        if (!e.target.closest('input, button, textarea, select')) {
-          listEl.setAttribute('draggable', 'true');
-        }
-      });
-      headerEl.addEventListener('mouseup', () => {
+    // List dragging is strictly armed from list header (never inputs, buttons, cards, or list body)
+    headerEl.addEventListener('mousedown', (e) => {
+      if (e.button === 0 && !e.target.closest('input, button, textarea, select, .column-color-indicator-btn')) {
+        listEl.setAttribute('draggable', 'true');
+      }
+    });
+    headerEl.addEventListener('mouseup', () => {
+      if (!this.dnd.draggedListId) {
         listEl.removeAttribute('draggable');
-      });
-      listEl.addEventListener('dragstart', (e) => {
-        if (!e.target.closest('.list-header') || e.target.closest('input, button, textarea, select, .kanban-card, .cards-container, .list-quick-add')) {
-          e.preventDefault();
-          listEl.removeAttribute('draggable');
-          return;
-        }
-        this.dnd.handleListDragStart(e, list.id);
-      });
-      listEl.addEventListener('dragend', (e) => {
-        listEl.removeAttribute('draggable');
-        this.dnd.handleListDragEnd(e);
-      });
-      this.dnd.attachListTouchEvents(listEl, list.id);
-    }
+      }
+    });
+    listEl.addEventListener('dragstart', (e) => {
+      if (listEl.getAttribute('draggable') !== 'true') {
+        e.preventDefault();
+        return;
+      }
+      this.dnd.handleListDragStart(e, list.id);
+    });
+    listEl.addEventListener('dragend', (e) => {
+      listEl.removeAttribute('draggable');
+      this.dnd.handleListDragEnd(e);
+    });
+
+    // Touch events on header for list reordering
+    this.dnd.attachListTouchEvents(listEl, list.id);
 
     // Quick Add Bar right inside the list (at top below header)!
     const quickAddEl = document.createElement('div');
@@ -834,8 +845,19 @@ class KanbanApp {
     cardsContainer.className = 'cards-container';
     cardsContainer.setAttribute('data-list-id', list.id);
 
-    // DND events for cards container
-    cardsContainer.addEventListener('dragover', (e) => this.dnd.handleCardContainerDragOver(e, list.id));
+    // DND events: allow dropping cards anywhere over list column or container
+    listEl.addEventListener('dragover', (e) => {
+      if (this.dnd.draggedCardId) {
+        this.dnd.handleCardContainerDragOver(e, cardsContainer);
+      }
+    });
+    listEl.addEventListener('drop', (e) => {
+      if (this.dnd.draggedCardId) {
+        this.dnd.handleCardDrop(e, list.id);
+      }
+    });
+
+    cardsContainer.addEventListener('dragover', (e) => this.dnd.handleCardContainerDragOver(e, cardsContainer));
     cardsContainer.addEventListener('drop', (e) => this.dnd.handleCardDrop(e, list.id));
 
     // Render cards
@@ -926,13 +948,12 @@ class KanbanApp {
     // The card body itself is never draggable.
     const grip = cardEl.querySelector('.card-drag-grip');
     if (grip) {
-      grip.addEventListener('mousedown', () => {
-        cardEl.setAttribute('draggable', 'true');
+      grip.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+          cardEl.setAttribute('draggable', 'true');
+        }
       });
       grip.addEventListener('mouseup', () => {
-        cardEl.removeAttribute('draggable');
-      });
-      grip.addEventListener('mouseleave', () => {
         if (!this.dnd.isDragging) {
           cardEl.removeAttribute('draggable');
         }
@@ -940,10 +961,9 @@ class KanbanApp {
     }
 
     cardEl.addEventListener('dragstart', (e) => {
-      // Abort immediately if drag was not initiated on the grip handle
-      if (!e.target.closest('.card-drag-grip')) {
+      // Abort immediately if card is not armed for drag
+      if (cardEl.getAttribute('draggable') !== 'true') {
         e.preventDefault();
-        cardEl.removeAttribute('draggable');
         return;
       }
       this.dnd.handleCardDragStart(e, card.id, listId);
