@@ -52,13 +52,13 @@ export function isDefaultStarterBoard(board) {
   if (board.isDefault === true) return true;
   const cards = board.cards || {};
   const keys = Object.keys(cards);
-  if (keys.length === 5 &&
-      cards['card-1'] &&
-      cards['card-2'] &&
-      cards['card-3'] &&
-      cards['card-4'] &&
-      cards['card-truck'] &&
-      (!board.archivedCards || board.archivedCards.length === 0)) {
+  if (keys.length === 0 && (!board.archivedCards || board.archivedCards.length === 0)) {
+    return true;
+  }
+  if (keys.length === 1 && cards['card-1'] && (!board.archivedCards || board.archivedCards.length === 0)) {
+    return true;
+  }
+  if (cards['card-1'] && cards['card-truck']) {
     return true;
   }
   return false;
@@ -73,20 +73,20 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
     {
       id: 'list-todo',
       title: 'Plan',
-      color: '#3b82f6', // Column color badge
-      cardIds: ['card-1', 'card-2', 'card-truck']
+      color: '#3b82f6',
+      cardIds: ['card-1']
     },
     {
       id: 'list-in-progress',
       title: 'Progress',
       color: '#eab308',
-      cardIds: ['card-3']
+      cardIds: []
     },
     {
       id: 'list-done',
       title: 'Done',
       color: '#10b981',
-      cardIds: ['card-4']
+      cardIds: []
     },
     {
       id: 'list-drop',
@@ -98,76 +98,17 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
   cards: {
     'card-1': {
       id: 'card-1',
-      title: 'Welcome to your Kanban board',
-      description: 'You can drag and drop cards between lists, reorder them, or click on them to view details.',
+      title: 'Welcome to your plan',
+      description: '',
       priority: 'low',
-      labels: [{ id: 'l1', name: 'Welcome', color: '#10b981' }],
-      dueDate: '',
-      checklist: [
-        { id: 'c1', text: 'Drag this card to "Progress"', done: false },
-        { id: 'c2', text: 'Click to open details modal', done: false }
-      ],
-      comments: [
-        { id: 'cm-1', text: 'Welcome! You can add notes or team discussions here.', createdAt: new Date().toISOString() }
-      ],
-      createdAt: new Date().toISOString()
-    },
-    'card-2': {
-      id: 'card-2',
-      title: 'Try Dark / Light Mode & Shortcuts',
-      description: 'Press [?] to view keyboard shortcuts, [n] to create a card, or [/] to search.',
-      priority: 'medium',
-      labels: [{ id: 'l2', name: 'Feature', color: '#3b82f6' }],
-      dueDate: new Date().toISOString().split('T')[0],
-      checklist: [],
-      comments: [],
-      createdAt: new Date().toISOString()
-    },
-    'card-3': {
-      id: 'card-3',
-      title: 'Customize cards, priorities & checklists',
-      description: 'Set priority levels, column colors, and checklists with instant on-card checking.',
-      priority: 'urgent',
-      labels: [{ id: 'l3', name: 'High Priority', color: '#ef4444' }],
-      dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      checklist: [
-        { id: 'c3', text: 'Add your own task item', done: true },
-        { id: 'c4', text: 'Set a target completion date', done: false }
-      ],
-      comments: [
-        { id: 'cm-2', text: 'Checklist subtasks can be checked directly on the board.', createdAt: new Date().toISOString() }
-      ],
-      createdAt: new Date().toISOString()
-    },
-    'card-4': {
-      id: 'card-4',
-      title: 'Set up Supabase Cloud Sync (Optional)',
-      description: 'Configure your Supabase project in Settings to sync your board, cards, and theme in real-time across devices.',
-      priority: 'high',
-      labels: [{ id: 'l4', name: 'Cloud', color: '#8b5cf6' }],
-      dueDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
-      checklist: [],
-      comments: [],
-      createdAt: new Date().toISOString()
-    },
-    'card-truck': {
-      id: 'card-truck',
-      title: 'Truck body work',
-      description: 'Fabricating the truck body: measure the chassis, cut and weld the frame, fit the panels, then prime and paint.',
-      priority: 'high',
-      labels: [{ id: 'l5', name: 'Fabrication', color: '#f97316' }],
-      dueDate: '',
-      checklist: [
-        { id: 'c5', text: 'Measure chassis and mark out the body frame', done: false },
-        { id: 'c6', text: 'Cut and weld the sub-frame and cross members', done: false },
-        { id: 'c7', text: 'Fit and align the side and rear panels', done: false },
-        { id: 'c8', text: 'Prime, rust-proof and paint', done: false }
-      ],
-      comments: [],
+      completed: false,
+      days: ['M', 'T', 'W', 'R', 'F', 'S', 'U'],
+      lastNotifiedAt: 0,
       createdAt: new Date().toISOString()
     }
   },
-  archivedCards: [] // List of archived card objects
+  archivedCards: [],
+  deletedCardIds: []
 });
 
 export class StorageManager {
@@ -237,11 +178,15 @@ export class StorageManager {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          const legacyDemoIds = new Set(['card-truck', 'card-2', 'card-3', 'card-4']);
           Object.keys(parsed).forEach(k => {
-            if (!parsed[k].archivedCards) parsed[k].archivedCards = [];
-            if (parsed[k].cards) {
-              Object.keys(parsed[k].cards).forEach(cId => {
-                delete parsed[k].cards[cId].cover;
+            const b = parsed[k];
+            if (!b.archivedCards) b.archivedCards = [];
+            if (!Array.isArray(b.deletedCardIds)) b.deletedCardIds = [];
+            b.deletedCardIds = b.deletedCardIds.filter(id => !legacyDemoIds.has(id));
+            if (b.cards && typeof b.cards === 'object') {
+              Object.keys(b.cards).forEach(cId => {
+                delete b.cards[cId].cover;
               });
             }
           });
@@ -479,6 +424,8 @@ export class StorageManager {
       { id: 'list-drop-' + id, title: 'Drop', color: '#64748b', cardIds: [] }
     ];
     newBoard.cards = {};
+    newBoard.deletedCardIds = [];
+    delete newBoard.isDefault;
     this.boards[id] = newBoard;
     this.switchBoard(id);
     return id;
