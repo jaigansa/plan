@@ -239,9 +239,21 @@ export class DndController {
     window.addEventListener('touchcancel', (e) => this.handleGlobalTouchEnd(e));
   }
 
-  // List column dragging is disabled on mobile; nav pills act purely as quick navigation jump buttons.
+  // --- Mobile Nav Pill Reordering ---
   attachPillTouchEvents(pillEl, listId) {
-    return;
+    pillEl.addEventListener('touchstart', (e) => {
+      if (!this.isMobileViewport()) return;
+      if (e.touches.length !== 1) return;
+
+      const touch = e.touches[0];
+      this.pillDragEl = pillEl;
+      this.pillDragListId = listId;
+      this.pillStartX = touch.clientX;
+
+      clearTimeout(this.pillHoldTimer);
+      // Hold to arm: a quick swipe still scrolls the pill bar.
+      this.pillHoldTimer = setTimeout(() => this.startPillDrag(), 160);
+    }, { passive: true });
   }
 
   startPillDrag() {
@@ -318,6 +330,8 @@ export class DndController {
   }
 
   attachCardTouchEvents(cardEl, cardId, listId) {
+    // Disabled on mobile viewport: only pill reordering is active on mobile
+    if (this.isMobileViewport()) return;
     const grip = cardEl.querySelector('.card-drag-grip') || cardEl;
 
     grip.addEventListener('touchstart', (e) => {

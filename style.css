@@ -3194,26 +3194,9 @@ kbd {
     color: #ef4444;
   }
 
-  /* The grip handle is the dedicated touch-drag target for reordering todo cards on mobile */
+  /* On mobile: card dragging is disabled; list reordering is handled via the mobile nav bar pills */
   .card-drag-grip {
-    display: flex;
-    opacity: 0.6;
-    cursor: grab;
-    touch-action: none; /* Prevents scroll interference when dragging from the grip handle */
-    padding: 4px 6px;
-    margin: -4px -2px -4px -4px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .card-drag-grip:active {
-    cursor: grabbing;
-    opacity: 1;
-    color: var(--accent-color);
-  }
-
-  .card-drag-grip svg {
-    width: 18px;
-    height: 18px;
+    display: none;
   }
 
   /* Quick Add Bar */
