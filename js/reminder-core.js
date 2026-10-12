@@ -57,15 +57,18 @@
   }
 
   /**
-   * Build a cardId -> list title map from the board data.
-   * Tolerates lists without cardIds so a partially synced board cannot throw.
+   * Build a cardId -> { title, days } map from the board data.
    */
   function buildCardListMap(data) {
     const map = {};
     if (!data || !Array.isArray(data.lists)) return map;
     data.lists.forEach((list) => {
+      const listDays = Array.isArray(list.days) && list.days.length ? list.days : ALL_DAYS;
       (list.cardIds || []).forEach((id) => {
-        map[id] = list.title || 'Todo';
+        map[id] = {
+          title: list.title || 'Todo',
+          days: listDays
+        };
       });
     });
     return map;
@@ -96,8 +99,8 @@
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return; // no priority => no reminders
 
-      // A card with no explicit days reminds every day.
-      const assignedDays = Array.isArray(card.days) && card.days.length ? card.days : ALL_DAYS;
+      const listInfo = cardListMap[cardId];
+      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
       if (assignedDays.indexOf(todayCode) === -1) return;
 
       const lastNotified = card.lastNotifiedAt || 0;
@@ -107,7 +110,7 @@
         cardId: card.id || cardId,
         title: card.title || 'Untitled',
         priority: card.priority,
-        listName: cardListMap[cardId] || 'Todo',
+        listName: listInfo ? listInfo.title : 'Todo',
         intervalMs: intervalMs,
         todayCode: todayCode
       });
@@ -156,7 +159,8 @@
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return;
 
-      const assignedDays = Array.isArray(card.days) && card.days.length ? card.days : ALL_DAYS;
+      const listInfo = cardListMap[cardId];
+      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
       if (assignedDays.indexOf(todayCode) === -1) return;
 
       const lastNotified = card.lastNotifiedAt || 0;
@@ -168,7 +172,7 @@
           cardId: card.id || cardId,
           title: card.title || 'Untitled',
           priority: card.priority,
-          listName: cardListMap[cardId] || 'Todo',
+          listName: listInfo ? listInfo.title : 'Todo',
           nextDueAt: nextDueAt,
           msUntil: Math.max(0, nextDueAt - at)
         };
@@ -188,6 +192,7 @@
     if (!data || !data.cards || !data.lists) return map;
 
     const todayCode = getTodayCode(at);
+    const cardListMap = buildCardListMap(data);
 
     Object.keys(data.cards).forEach((cardId) => {
       const card = data.cards[cardId];
@@ -196,7 +201,8 @@
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return;
 
-      const assignedDays = Array.isArray(card.days) && card.days.length ? card.days : ALL_DAYS;
+      const listInfo = cardListMap[cardId];
+      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
       if (assignedDays.indexOf(todayCode) === -1) return;
 
       const lastNotified = card.lastNotifiedAt || 0;

@@ -293,6 +293,11 @@ class KanbanApp {
 
     ModalHelper.bind(this.addCardModal, null, 'add-card-close-btn');
 
+    const moveModal = document.getElementById('move-card-modal');
+    if (moveModal) {
+      ModalHelper.bind(moveModal, null, 'move-card-close-btn');
+    }
+
     if (this.addCardPrioEl) {
       const options = [{ key: '', name: 'None', color: null }, ...Object.values(PRIORITIES)];
       this.addCardPrioEl.innerHTML = options.map(p => `
@@ -313,12 +318,9 @@ class KanbanApp {
 
           const listEl = this.boardEl.querySelector(`.kanban-list[data-list-id="${listId}"]`);
           const quickInput = listEl ? listEl.querySelector('.quick-add-input') : null;
-          const days = listEl
-            ? [...listEl.querySelectorAll('.day-chip.active')].map(c => c.dataset.day)
-            : null;
           if (quickInput) quickInput.value = '';
 
-          this.addCard(listId, title, priority, days);
+          this.addCard(listId, title, priority);
         });
       });
     }
@@ -481,9 +483,8 @@ class KanbanApp {
     quickForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const val = quickInput.value.trim();
-      const currentDays = (Array.isArray(list.days) && list.days.length) ? list.days : ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
       if (val) {
-        this.addCard(list.id, val, '', currentDays);
+        this.addCard(list.id, val, '');
         quickInput.value = '';
         quickInput.blur();
       }
@@ -660,7 +661,9 @@ class KanbanApp {
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.closeAllCardMenus();
-        this.deleteCard(card.id);
+        if (confirm(`Delete todo "${card.title}"?`)) {
+          this.deleteCard(card.id);
+        }
       });
     }
 
@@ -701,35 +704,8 @@ class KanbanApp {
   }
 
   deleteList(listId) {
-    const data = this.storage.getData();
-    const listIndex = data.lists.findIndex(l => l.id === listId);
-    if (listIndex > -1) {
-      const [removedList] = data.lists.splice(listIndex, 1);
-      if (!Array.isArray(data.deletedListIds)) {
-        data.deletedListIds = [];
-      }
-      if (!data.deletedListIds.includes(listId)) {
-        data.deletedListIds.push(listId);
-      }
-      if (data.deletedListIds.length > 50) {
-        data.deletedListIds = data.deletedListIds.slice(-50);
-      }
-
-      if (!Array.isArray(data.deletedCardIds)) {
-        data.deletedCardIds = [];
-      }
-      removedList.cardIds.forEach(cId => {
-        delete data.cards[cId];
-        if (!data.deletedCardIds.includes(cId)) {
-          data.deletedCardIds.push(cId);
-        }
-      });
-      if (data.deletedCardIds.length > 200) {
-        data.deletedCardIds = data.deletedCardIds.slice(-200);
-      }
-      this.storage.saveLocal(data);
-      this.renderBoard();
-    }
+    this.storage.deleteList(listId);
+    this.renderBoard();
   }
 
   reorderList(listId, targetIndex) {
@@ -744,7 +720,7 @@ class KanbanApp {
     this.renderBoard();
   }
 
-  addCard(listId, rawTitle, explicitPriority = '', explicitDays = null) {
+  addCard(listId, rawTitle, explicitPriority = '') {
     const data = this.storage.getData();
     const list = data.lists.find(l => l.id === listId);
     if (!list) return;
@@ -778,7 +754,6 @@ class KanbanApp {
       title,
       priority: priority || '',
       completed: false,
-      days: (explicitDays && Array.isArray(explicitDays)) ? explicitDays : ['M', 'T', 'W', 'R', 'F', 'S', 'U'],
       lastNotifiedAt: 0,
       createdAt: now
     };
@@ -818,20 +793,6 @@ class KanbanApp {
     this.renderBoard();
   }
 
-  cycleCardPriority(cardId) {
-    const data = this.storage.getData();
-    const card = data.cards[cardId];
-    if (!card) return;
-
-    const cycleOrder = ['', 'low', 'medium', 'high', 'urgent'];
-    const currentIdx = cycleOrder.indexOf(card.priority || '');
-    const nextIdx = (currentIdx + 1) % cycleOrder.length;
-    card.priority = cycleOrder[nextIdx];
-
-    this.storage.saveLocal(data);
-    this.renderBoard();
-  }
-
   deleteCard(cardId) {
     this.storage.deleteCard(cardId);
     this.renderBoard();
@@ -861,18 +822,35 @@ class KanbanApp {
       return;
     }
 
-    const optionsText = otherLists.map((l, i) => `${i + 1}: ${l.title}`).join('\n');
-    const pick = prompt(`Move todo to which list?\n${optionsText}\n\nEnter number (1-${otherLists.length}):`);
-    if (!pick) return;
+    const card = (data.cards || {})[cardId];
+    const modalEl = document.getElementById('move-card-modal');
+    const titlePreview = document.getElementById('move-card-title-preview');
+    const optionsContainer = document.getElementById('move-card-list-options');
 
-    const num = parseInt(pick, 10);
-    if (isNaN(num) || num < 1 || num > otherLists.length) {
-      alert('Invalid choice.');
-      return;
+    if (!modalEl || !optionsContainer) return;
+
+    if (titlePreview) {
+      titlePreview.textContent = card ? card.title : 'Todo';
     }
 
-    const targetList = otherLists[num - 1];
-    this.moveCard(cardId, currentListId, targetList.id, -1);
+    optionsContainer.innerHTML = otherLists.map(targetList => `
+      <button type="button" class="btn btn-secondary move-list-target-btn" data-target-list-id="${targetList.id}" style="width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; font-size: 0.9rem; cursor: pointer;">
+        <span style="font-weight: 600;">${this.escapeHtml(targetList.title)}</span>
+        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+      </button>
+    `).join('');
+
+    optionsContainer.querySelectorAll('.move-list-target-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetListId = btn.dataset.targetListId;
+        ModalHelper.close(modalEl);
+        if (targetListId) {
+          this.moveCard(cardId, currentListId, targetListId, -1);
+        }
+      });
+    });
+
+    ModalHelper.open(modalEl);
   }
 
   moveCard(cardId, sourceListId, targetListId, targetIndex) {

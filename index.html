@@ -173,6 +173,24 @@
     </div>
   </div>
 
+  <!-- Move Card Modal -->
+  <div class="modal-overlay hidden" id="move-card-modal" role="dialog" aria-modal="true" aria-labelledby="move-card-modal-title">
+    <div class="modal-card" style="max-width: 360px;">
+      <div class="modal-header">
+        <h3 id="move-card-modal-title"><i data-lucide="arrow-right-left"></i> Move Todo</h3>
+        <button type="button" class="modal-close" id="move-card-close-btn" data-modal-close aria-label="Close move picker">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section" style="border: none; margin-bottom: 0; padding: 0;">
+          <p class="settings-hint-text" style="margin-bottom: 12px;">
+            Move &ldquo;<span id="move-card-title-preview"></span>&rdquo; to:
+          </p>
+          <div id="move-card-list-options" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Reminder rules + IndexedDB access. These are CLASSIC scripts, not modules:
        the service worker loads the very same files with importScripts(), which
        is what lets reminders fire while this tab is closed. They must stay
