@@ -295,7 +295,7 @@ export class NotificationManager {
   updateCardProgressBars(data, now) {
     if (!Core) return;
     const progressMap = Core.getCardReminderProgressMap(data, now);
-    const cardEls = document.querySelectorAll('.kanban-card');
+    const cardEls = document.querySelectorAll('.todo-card, .kanban-card');
 
     const prioColors = {
       urgent: '#ef4444',

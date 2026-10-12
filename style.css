@@ -396,6 +396,7 @@ body {
 }
 
 /* Board Layout (Mobile-First / Mobile-Only) */
+.todo-board-container,
 .board-container {
   flex: 1;
   display: flex;
@@ -442,20 +443,24 @@ body {
 }
 
 /* Specific Container Scrollbars */
+.todo-board-container,
 .board-container {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+.todo-board-container::-webkit-scrollbar,
 .board-container::-webkit-scrollbar {
   height: 8px;
 }
 
+.todo-board-container::-webkit-scrollbar-track,
 .board-container::-webkit-scrollbar-track {
   background: transparent;
   margin: 0 1rem;
 }
 
+.todo-board-container::-webkit-scrollbar-thumb,
 .board-container::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
@@ -463,6 +468,7 @@ body {
   background-clip: padding-box;
 }
 
+.todo-board-container::-webkit-scrollbar-thumb:hover,
 .board-container::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
   background-clip: padding-box;
@@ -486,7 +492,8 @@ body {
   border-radius: 999px;
 }
 
-/* Kanban List / Column */
+/* Todo List / Column */
+.todo-list,
 .kanban-list {
   background: var(--list-bg);
   width: 100%;
@@ -589,7 +596,8 @@ body {
   min-height: 40px;
 }
 
-/* Kanban Card */
+/* Todo Card */
+.todo-card,
 .kanban-card {
   position: relative;
   background: var(--card-bg);
@@ -618,20 +626,24 @@ body {
   box-shadow: 0 0 6px var(--timer-glow, rgba(0, 255, 102, 0.4));
 }
 
+.todo-card.is-completed .card-timer-progress-bar,
 .kanban-card.is-completed .card-timer-progress-bar {
   display: none !important;
 }
 
+.todo-card:hover,
 .kanban-card:hover {
   box-shadow: var(--card-hover-shadow);
   transform: translateY(-2px);
 }
 
+.todo-card > *,
 .kanban-card > * {
   padding-left: 10px;
   padding-right: 10px;
 }
 
+.todo-card .todo-title,
 .kanban-card .todo-title {
   padding-top: 8px;
 }
@@ -1411,7 +1423,9 @@ kbd {
 [data-theme^="tui"] textarea,
 [data-theme^="tui"] kbd,
 [data-theme^="tui"] .app-header,
+[data-theme^="tui"] .todo-list,
 [data-theme^="tui"] .kanban-list,
+[data-theme^="tui"] .todo-card,
 [data-theme^="tui"] .kanban-card,
 [data-theme^="tui"] .modal-card {
   font-family: var(--tui-font) !important;
@@ -1466,12 +1480,14 @@ kbd {
   color: var(--text-primary);
 }
 
-/* Terminal Kanban Lists & Columns */
+/* Terminal Lists & Columns */
+[data-theme^="tui"] .todo-board-container,
 [data-theme^="tui"] .board-container {
   height: calc(100vh - 56px - var(--tui-bar-height, 28px));
   padding: 1rem;
 }
 
+[data-theme^="tui"] .todo-list,
 [data-theme^="tui"] .kanban-list {
   border: 1px solid var(--border-color);
   background: var(--list-bg);
@@ -1492,6 +1508,7 @@ kbd {
 }
 
 /* Terminal Cards */
+[data-theme^="tui"] .todo-card,
 [data-theme^="tui"] .kanban-card {
   border: 1px solid var(--border-color);
   background: var(--card-bg);
@@ -1502,6 +1519,7 @@ kbd {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+[data-theme^="tui"] .todo-card:hover,
 [data-theme^="tui"] .kanban-card:hover {
   border-color: var(--tui-border-active);
   box-shadow: var(--card-hover-shadow);
@@ -1509,51 +1527,69 @@ kbd {
 }
 
 /* Card Priority Border Colors (replaces priority pill) */
+.todo-card.priority-urgent,
 .kanban-card.priority-urgent,
+[data-theme^="tui"] .todo-card.priority-urgent,
 [data-theme^="tui"] .kanban-card.priority-urgent {
   border-color: #ef4444;
 }
 
+.todo-card.priority-high,
 .kanban-card.priority-high,
+[data-theme^="tui"] .todo-card.priority-high,
 [data-theme^="tui"] .kanban-card.priority-high {
   border-color: #f97316;
 }
 
+.todo-card.priority-medium,
 .kanban-card.priority-medium,
+[data-theme^="tui"] .todo-card.priority-medium,
 [data-theme^="tui"] .kanban-card.priority-medium {
   border-color: #eab308;
 }
 
+.todo-card.priority-low,
 .kanban-card.priority-low,
+[data-theme^="tui"] .todo-card.priority-low,
 [data-theme^="tui"] .kanban-card.priority-low {
   border-color: #10b981;
 }
 
+.todo-card.priority-none,
 .kanban-card.priority-none,
+[data-theme^="tui"] .todo-card.priority-none,
 [data-theme^="tui"] .kanban-card.priority-none {
   border-color: var(--border-color);
 }
 
 /* Priority Hover States with subtle phosphor glow */
+.todo-card.priority-urgent:hover,
 .kanban-card.priority-urgent:hover,
+[data-theme^="tui"] .todo-card.priority-urgent:hover,
 [data-theme^="tui"] .kanban-card.priority-urgent:hover {
   border-color: #ff6b6b;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
 }
 
+.todo-card.priority-high:hover,
 .kanban-card.priority-high:hover,
+[data-theme^="tui"] .todo-card.priority-high:hover,
 [data-theme^="tui"] .kanban-card.priority-high:hover {
   border-color: #fb923c;
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.45);
 }
 
+.todo-card.priority-medium:hover,
 .kanban-card.priority-medium:hover,
+[data-theme^="tui"] .todo-card.priority-medium:hover,
 [data-theme^="tui"] .kanban-card.priority-medium:hover {
   border-color: #facc15;
   box-shadow: 0 0 10px rgba(234, 179, 8, 0.45);
 }
 
+.todo-card.priority-low:hover,
 .kanban-card.priority-low:hover,
+[data-theme^="tui"] .todo-card.priority-low:hover,
 [data-theme^="tui"] .kanban-card.priority-low:hover {
   border-color: #34d399;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
@@ -1742,7 +1778,8 @@ kbd {
   }
 
   
-  /* Vertical Stacked Kanban Board Container on Mobile */
+  /* Vertical Stacked Board Container on Mobile */
+  .todo-board-container,
   .board-container {
     flex-direction: column;
     align-items: stretch;
@@ -1757,6 +1794,7 @@ kbd {
   }
 
   /* Full width mobile card columns stacked vertically */
+  .todo-list,
   .kanban-list {
     width: 100%;
     min-width: 0;
@@ -1807,8 +1845,10 @@ kbd {
     overflow-y: visible;
   }
 
-  /* Touch-optimized Kanban Card */
+  /* Touch-optimized Todo Card */
+  .todo-card,
   .kanban-card,
+  [data-theme^="tui"] .todo-card,
   [data-theme^="tui"] .kanban-card {
     padding: 10px 10px;
     margin-bottom: 6px;
@@ -1816,6 +1856,7 @@ kbd {
     user-select: none;
   }
 
+  .todo-card:active,
   .kanban-card:active {
     transform: scale(0.985);
   }

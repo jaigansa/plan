@@ -18,7 +18,7 @@ class KanbanApp {
     this.theme = new ThemeManager(this);
     this.notifications = new NotificationManager(this);
 
-    this.boardEl = document.getElementById('board');
+    this.boardEl = document.getElementById('todo-board') || document.getElementById('board');
     this.activeListId = null;
 
     this.init();
@@ -285,17 +285,17 @@ class KanbanApp {
 
   // --- Priority Picker Modal ---
   setupAddCardModal() {
-    this.addCardModal = document.getElementById('add-card-modal');
+    this.addCardModal = document.getElementById('add-todo-modal') || document.getElementById('add-card-modal');
     if (!this.addCardModal) return;
 
-    this.addCardTitlePreview = document.getElementById('add-card-title-preview');
-    this.addCardPrioEl = document.getElementById('add-card-priority-list');
+    this.addCardTitlePreview = document.getElementById('add-todo-title-preview') || document.getElementById('add-card-title-preview');
+    this.addCardPrioEl = document.getElementById('add-todo-priority-list') || document.getElementById('add-card-priority-list');
 
-    ModalHelper.bind(this.addCardModal, null, 'add-card-close-btn');
+    ModalHelper.bind(this.addCardModal, null, 'add-todo-close-btn');
 
-    const moveModal = document.getElementById('move-card-modal');
+    const moveModal = document.getElementById('move-todo-modal') || document.getElementById('move-card-modal');
     if (moveModal) {
-      ModalHelper.bind(moveModal, null, 'move-card-close-btn');
+      ModalHelper.bind(moveModal, null, 'move-todo-close-btn');
     }
 
     if (this.addCardPrioEl) {
@@ -316,7 +316,7 @@ class KanbanApp {
           this.pendingAddTitle = null;
           if (!listId || !title) return;
 
-          const listEl = this.boardEl.querySelector(`.kanban-list[data-list-id="${listId}"]`);
+          const listEl = this.boardEl.querySelector(`.todo-list[data-list-id="${listId}"]`) || this.boardEl.querySelector(`.kanban-list[data-list-id="${listId}"]`);
           const quickInput = listEl ? listEl.querySelector('.quick-add-input') : null;
           if (quickInput) quickInput.value = '';
 
@@ -331,7 +331,7 @@ class KanbanApp {
     const list = this.storage.getData().lists.find(l => l.id === listId);
     if (!list) return;
 
-    const listEl = this.boardEl.querySelector(`.kanban-list[data-list-id="${listId}"]`);
+    const listEl = this.boardEl.querySelector(`.todo-list[data-list-id="${listId}"]`) || this.boardEl.querySelector(`.kanban-list[data-list-id="${listId}"]`);
     const quickInput = listEl ? listEl.querySelector('.quick-add-input') : null;
     const title = quickInput ? quickInput.value.trim() : '';
     if (!title) {
@@ -342,7 +342,7 @@ class KanbanApp {
     this.addCardListId = listId;
     this.pendingAddTitle = title;
 
-    const nameEl = document.getElementById('add-card-list-name');
+    const nameEl = document.getElementById('add-todo-list-name') || document.getElementById('add-card-list-name');
     if (nameEl) nameEl.textContent = list.title;
     const preview = this.addCardTitlePreview;
     if (preview) preview.textContent = title;
@@ -357,7 +357,7 @@ class KanbanApp {
     const cards = (data.cards && typeof data.cards === 'object') ? data.cards : {};
 
     const addListWrapper = document.getElementById('add-list-wrapper');
-    const existingLists = this.boardEl.querySelectorAll('.kanban-list');
+    const existingLists = this.boardEl.querySelectorAll('.todo-list, .kanban-list');
     existingLists.forEach(l => l.remove());
 
     lists.forEach((list, index) => {
@@ -377,7 +377,7 @@ class KanbanApp {
 
   createListElement(list, cardsMap, listIndex, totalLists) {
     const listEl = document.createElement('div');
-    listEl.className = 'kanban-list';
+    listEl.className = 'todo-list';
     listEl.setAttribute('data-list-id', list.id);
 
     const cards = (list.cardIds || []).map(id => cardsMap[id]).filter(Boolean);
@@ -474,7 +474,7 @@ class KanbanApp {
     const cardEl = document.createElement('div');
     const priorityKey = (card.priority || '').toLowerCase();
     const priorityClass = priorityKey ? `priority-${priorityKey}` : 'priority-none';
-    cardEl.className = `kanban-card ${priorityClass}` + (card.completed ? ' is-completed' : '');
+    cardEl.className = `todo-card ${priorityClass}` + (card.completed ? ' is-completed' : '');
     cardEl.setAttribute('data-card-id', card.id);
     cardEl.setAttribute('data-priority', priorityKey);
 
@@ -772,9 +772,9 @@ class KanbanApp {
     }
 
     const card = (data.cards || {})[cardId];
-    const modalEl = document.getElementById('move-card-modal');
-    const titlePreview = document.getElementById('move-card-title-preview');
-    const optionsContainer = document.getElementById('move-card-list-options');
+    const modalEl = document.getElementById('move-todo-modal') || document.getElementById('move-card-modal');
+    const titlePreview = document.getElementById('move-todo-title-preview') || document.getElementById('move-card-title-preview');
+    const optionsContainer = document.getElementById('move-todo-list-options') || document.getElementById('move-card-list-options');
 
     if (!modalEl || !optionsContainer) return;
 

@@ -43,8 +43,8 @@
       </div>
     </header>
 
-    <!-- Main Kanban Board Container -->
-    <main class="board-container" id="board">
+    <!-- Main Todo Board Container -->
+    <main class="todo-board-container" id="todo-board">
       <!-- Dynamic lists will be rendered here -->
       
       <!-- Add New List Column Action -->
@@ -155,38 +155,38 @@
 
 
   <!-- Priority Picker (opened by a list's + button once a title is typed) -->
-  <div class="modal-overlay hidden" id="add-card-modal" role="dialog" aria-modal="true" aria-labelledby="add-card-modal-title">
+  <div class="modal-overlay hidden" id="add-todo-modal" role="dialog" aria-modal="true" aria-labelledby="add-todo-modal-title">
     <div class="modal-card" style="max-width: 360px;">
       <div class="modal-header">
-        <h3 id="add-card-modal-title"><i data-lucide="flag"></i> Priority</h3>
-        <button type="button" class="modal-close" id="add-card-close-btn" data-modal-close aria-label="Close priority picker">&times;</button>
+        <h3 id="add-todo-modal-title"><i data-lucide="flag"></i> Priority</h3>
+        <button type="button" class="modal-close" id="add-todo-close-btn" data-modal-close aria-label="Close priority picker">&times;</button>
       </div>
 
       <div class="modal-body">
         <div class="modal-section" style="border: none; margin-bottom: 0; padding: 0;">
           <p class="settings-hint-text" style="margin-bottom: 10px;">
-            Add &ldquo;<span id="add-card-title-preview"></span>&rdquo; to
-            <strong id="add-card-list-name">&mdash;</strong> with priority:
+            Add &ldquo;<span id="add-todo-title-preview"></span>&rdquo; to
+            <strong id="add-todo-list-name">&mdash;</strong> with priority:
           </p>
-          <div class="priority-selector" id="add-card-priority-list"></div>
+          <div class="priority-selector" id="add-todo-priority-list"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Move Card Modal -->
-  <div class="modal-overlay hidden" id="move-card-modal" role="dialog" aria-modal="true" aria-labelledby="move-card-modal-title">
+  <!-- Move Todo Modal -->
+  <div class="modal-overlay hidden" id="move-todo-modal" role="dialog" aria-modal="true" aria-labelledby="move-todo-modal-title">
     <div class="modal-card" style="max-width: 360px;">
       <div class="modal-header">
-        <h3 id="move-card-modal-title"><i data-lucide="arrow-right-left"></i> Move Todo</h3>
-        <button type="button" class="modal-close" id="move-card-close-btn" data-modal-close aria-label="Close move picker">&times;</button>
+        <h3 id="move-todo-modal-title"><i data-lucide="arrow-right-left"></i> Move Todo</h3>
+        <button type="button" class="modal-close" id="move-todo-close-btn" data-modal-close aria-label="Close move picker">&times;</button>
       </div>
       <div class="modal-body">
         <div class="modal-section" style="border: none; margin-bottom: 0; padding: 0;">
           <p class="settings-hint-text" style="margin-bottom: 12px;">
-            Move &ldquo;<span id="move-card-title-preview"></span>&rdquo; to:
+            Move &ldquo;<span id="move-todo-title-preview"></span>&rdquo; to:
           </p>
-          <div id="move-card-list-options" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          <div id="move-todo-list-options" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
       </div>
     </div>
