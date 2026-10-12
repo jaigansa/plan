@@ -57,18 +57,14 @@
   }
 
   /**
-   * Build a cardId -> { title, days } map from the board data.
+   * Build a cardId -> list title map from the board data.
    */
   function buildCardListMap(data) {
     const map = {};
     if (!data || !Array.isArray(data.lists)) return map;
     data.lists.forEach((list) => {
-      const listDays = Array.isArray(list.days) && list.days.length ? list.days : ALL_DAYS;
       (list.cardIds || []).forEach((id) => {
-        map[id] = {
-          title: list.title || 'Todo',
-          days: listDays
-        };
+        map[id] = list.title || 'Todo';
       });
     });
     return map;
@@ -99,10 +95,7 @@
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return; // no priority => no reminders
 
-      const listInfo = cardListMap[cardId];
-      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
-      if (assignedDays.indexOf(todayCode) === -1) return;
-
+      const listName = cardListMap[cardId] || 'Todo';
       const lastNotified = card.lastNotifiedAt || 0;
       if (at - lastNotified < intervalMs) return;
 
@@ -110,7 +103,7 @@
         cardId: card.id || cardId,
         title: card.title || 'Untitled',
         priority: card.priority,
-        listName: listInfo ? listInfo.title : 'Todo',
+        listName: listName,
         intervalMs: intervalMs,
         todayCode: todayCode
       });
@@ -159,10 +152,7 @@
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return;
 
-      const listInfo = cardListMap[cardId];
-      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
-      if (assignedDays.indexOf(todayCode) === -1) return;
-
+      const listName = cardListMap[cardId] || 'Todo';
       const lastNotified = card.lastNotifiedAt || 0;
       let nextDueAt = lastNotified ? (lastNotified + intervalMs) : at;
       if (nextDueAt < at) nextDueAt = at; // due right now
@@ -172,7 +162,7 @@
           cardId: card.id || cardId,
           title: card.title || 'Untitled',
           priority: card.priority,
-          listName: listInfo ? listInfo.title : 'Todo',
+          listName: listName,
           nextDueAt: nextDueAt,
           msUntil: Math.max(0, nextDueAt - at)
         };
@@ -183,7 +173,7 @@
   }
 
   /**
-   * Get progress ratio [0..1] and countdown ms for each card with active reminders today.
+   * Get progress ratio [0..1] and countdown ms for each card with active reminders.
    * Returns a map: { [cardId]: { progress: 0..1, msLeft, intervalMs, isDue } }
    */
   function getCardReminderProgressMap(data, now) {
@@ -191,19 +181,12 @@
     const map = {};
     if (!data || !data.cards || !data.lists) return map;
 
-    const todayCode = getTodayCode(at);
-    const cardListMap = buildCardListMap(data);
-
     Object.keys(data.cards).forEach((cardId) => {
       const card = data.cards[cardId];
       if (!card || card.completed) return;
 
       const intervalMs = PRIORITY_INTERVALS[card.priority];
       if (!intervalMs) return;
-
-      const listInfo = cardListMap[cardId];
-      const assignedDays = listInfo ? listInfo.days : ALL_DAYS;
-      if (assignedDays.indexOf(todayCode) === -1) return;
 
       const lastNotified = card.lastNotifiedAt || 0;
       let elapsed = 0;

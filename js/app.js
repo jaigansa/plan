@@ -10,7 +10,7 @@
 import { StorageManager } from './storage.js';
 import { ThemeManager } from './theme.js';
 import { escapeHtml, PRIORITIES, ModalHelper } from './utils.js';
-import { NotificationManager, DAY_INFO } from './notifications.js';
+import { NotificationManager } from './notifications.js';
 
 class KanbanApp {
   constructor() {
@@ -451,35 +451,6 @@ class KanbanApp {
       cardsContainer.appendChild(cardEl);
     });
 
-    // List Footer: Days Group
-    const listFooterEl = document.createElement('div');
-    listFooterEl.className = 'kanban-list-footer';
-
-    const listDays = (Array.isArray(list.days) && list.days.length) ? list.days : ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
-    const daysChipsHtml = DAY_INFO.map(d => {
-      const active = listDays.includes(d.code);
-      return `<button type="button" class="day-chip ${active ? 'active' : ''}" data-day="${d.code}" title="${d.full}: Reminder ${active ? 'ON' : 'OFF'}">${d.code}</button>`;
-    }).join('');
-
-    listFooterEl.innerHTML = `
-      <div class="quick-add-days-group" title="Active Reminder Days for this list">
-        <span class="days-footer-label"><i data-lucide="bell"></i> Days:</span>
-        <div class="days-chips-wrapper">
-          ${daysChipsHtml}
-        </div>
-      </div>
-    `;
-
-    // Day chips toggle in footer
-    listFooterEl.querySelectorAll('.day-chip').forEach(chip => {
-      chip.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const dayCode = chip.getAttribute('data-day');
-        this.toggleListDay(list.id, dayCode);
-      });
-    });
-
     quickForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const val = quickInput.value.trim();
@@ -495,7 +466,6 @@ class KanbanApp {
     listEl.appendChild(headerEl);
     listEl.appendChild(quickAddEl);
     listEl.appendChild(cardsContainer);
-    listEl.appendChild(listFooterEl);
 
     return listEl;
   }
@@ -768,27 +738,6 @@ class KanbanApp {
     if (!card) return;
 
     card.completed = !card.completed;
-    this.storage.saveLocal(data);
-    this.renderBoard();
-  }
-
-  toggleListDay(listId, dayCode) {
-    const data = this.storage.getData();
-    const list = (data.lists || []).find(l => l.id === listId);
-    if (!list) return;
-
-    const ALL_DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
-    if (!Array.isArray(list.days) || list.days.length === 0) {
-      list.days = [...ALL_DAYS];
-    }
-
-    if (list.days.includes(dayCode)) {
-      list.days = list.days.filter(d => d !== dayCode);
-    } else {
-      list.days.push(dayCode);
-      list.days.sort((a, b) => ALL_DAYS.indexOf(a) - ALL_DAYS.indexOf(b));
-    }
-
     this.storage.saveLocal(data);
     this.renderBoard();
   }
