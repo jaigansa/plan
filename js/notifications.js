@@ -188,8 +188,8 @@ export class NotificationManager {
       }
     }
 
-    return this.sendNotification('plan Test Notification', {
-      body: 'Notifications are working cleanly!',
+    return this.sendNotification('Test Alert..!', {
+      body: 'Working.',
       tag: 'plan-test-alert'
     });
   }
