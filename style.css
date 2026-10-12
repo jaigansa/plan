@@ -582,6 +582,7 @@ body {
 
 /* Kanban Card */
 .kanban-card {
+  position: relative;
   background: var(--card-bg);
   color: var(--card-text);
   border: 1px solid var(--border-color);
@@ -593,6 +594,23 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Card Notification Countdown Progress Bar (replaces/animates bottom priority border) */
+.card-timer-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2.5px;
+  width: var(--timer-progress, 0%);
+  background: var(--timer-color, var(--accent-color));
+  transition: width 0.8s linear, background-color 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 0 6px var(--timer-glow, rgba(0, 255, 102, 0.4));
+}
+
+.kanban-card.is-completed .card-timer-progress-bar {
+  display: none !important;
 }
 
 .kanban-card:hover {

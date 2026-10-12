@@ -573,6 +573,7 @@ class KanbanApp {
           </div>
         </div>
       </div>
+      <div class="card-timer-progress-bar" title="Reminder countdown timer"></div>
     `;
 
     // Completion checkbox toggle

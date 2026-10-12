@@ -178,6 +178,55 @@
     return nextItem;
   }
 
+  /**
+   * Get progress ratio [0..1] and countdown ms for each card with active reminders today.
+   * Returns a map: { [cardId]: { progress: 0..1, msLeft, intervalMs, isDue } }
+   */
+  function getCardReminderProgressMap(data, now) {
+    const at = typeof now === 'number' ? now : Date.now();
+    const map = {};
+    if (!data || !data.cards || !data.lists) return map;
+
+    const todayCode = getTodayCode(at);
+
+    Object.keys(data.cards).forEach((cardId) => {
+      const card = data.cards[cardId];
+      if (!card || card.completed) return;
+
+      const intervalMs = PRIORITY_INTERVALS[card.priority];
+      if (!intervalMs) return;
+
+      const assignedDays = Array.isArray(card.days) && card.days.length ? card.days : ALL_DAYS;
+      if (assignedDays.indexOf(todayCode) === -1) return;
+
+      const lastNotified = card.lastNotifiedAt || 0;
+      let elapsed = 0;
+      let msLeft = 0;
+
+      if (!lastNotified) {
+        // Not yet notified: initial cycle
+        msLeft = 0;
+        elapsed = intervalMs;
+      } else {
+        elapsed = at - lastNotified;
+        msLeft = Math.max(0, intervalMs - elapsed);
+      }
+
+      // Progress: 0% right after notification -> 100% when timer finishes / reminder is due
+      const progress = Math.min(1, Math.max(0, elapsed / intervalMs));
+
+      map[cardId] = {
+        progress,
+        percentage: Math.round(progress * 100),
+        msLeft,
+        intervalMs,
+        isDue: elapsed >= intervalMs
+      };
+    });
+
+    return map;
+  }
+
   root.PlanReminderCore = {
     DAY_CODES: DAY_CODES,
     DAY_INFO: DAY_INFO,
@@ -188,6 +237,7 @@
     buildCardListMap: buildCardListMap,
     computeDueReminders: computeDueReminders,
     getNextDueReminder: getNextDueReminder,
+    getCardReminderProgressMap: getCardReminderProgressMap,
     markNotified: markNotified,
     describe: describe
   };

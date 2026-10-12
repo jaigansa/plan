@@ -287,6 +287,55 @@ export class NotificationManager {
     } else {
       badge.classList.remove('urgent');
     }
+
+    // Update individual card progress bars
+    this.updateCardProgressBars(data, now);
+  }
+
+  updateCardProgressBars(data, now) {
+    if (!Core) return;
+    const progressMap = Core.getCardReminderProgressMap(data, now);
+    const cardEls = document.querySelectorAll('.kanban-card');
+
+    const prioColors = {
+      urgent: '#ef4444',
+      high: '#f97316',
+      medium: '#eab308',
+      low: '#10b981'
+    };
+
+    const prioGlows = {
+      urgent: 'rgba(239, 68, 68, 0.5)',
+      high: 'rgba(249, 115, 22, 0.5)',
+      medium: 'rgba(234, 179, 8, 0.5)',
+      low: 'rgba(16, 185, 129, 0.5)'
+    };
+
+    cardEls.forEach(cardEl => {
+      const cardId = cardEl.getAttribute('data-card-id');
+      const bar = cardEl.querySelector('.card-timer-progress-bar');
+      if (!bar) return;
+
+      const info = progressMap[cardId];
+      if (!info) {
+        bar.style.width = '0%';
+        bar.style.display = 'none';
+        return;
+      }
+
+      const priority = cardEl.getAttribute('data-priority') || 'low';
+      const color = prioColors[priority] || '#00ff66';
+      const glow = prioGlows[priority] || 'rgba(0, 255, 102, 0.4)';
+
+      bar.style.display = 'block';
+      bar.style.setProperty('--timer-progress', `${info.percentage}%`);
+      bar.style.setProperty('--timer-color', color);
+      bar.style.setProperty('--timer-glow', glow);
+      bar.style.width = `${info.percentage}%`;
+
+      const minsLeft = Math.ceil(info.msLeft / 60000);
+      bar.title = info.isDue ? 'Notification due now' : `Next notification in ~${minsLeft}m (${info.percentage}%)`;
+    });
   }
 
   /**
