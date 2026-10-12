@@ -632,7 +632,7 @@ body {
   padding-right: 10px;
 }
 
-.kanban-card .card-title {
+.kanban-card .todo-title {
   padding-top: 8px;
 }
 
@@ -792,7 +792,7 @@ body {
   transform: rotate(45deg) translate(-0.5px, -1px);
 }
 
-.card-title {
+.todo-title {
   flex: 1;
   font-size: 0.9rem;
   line-height: 1.35;
@@ -802,11 +802,11 @@ body {
   transition: color 0.15s;
 }
 
-.card-title:hover {
+.todo-title:hover {
   color: var(--accent-color);
 }
 
-.card-title.completed-text {
+.todo-title.completed-text {
   text-decoration: line-through;
   color: var(--text-secondary);
   opacity: 0.6;
@@ -1559,7 +1559,7 @@ kbd {
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
 }
 
-[data-theme^="tui"] .card-title {
+[data-theme^="tui"] .todo-title {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -1838,7 +1838,7 @@ kbd {
     height: 20px;
   }
 
-  .card-title {
+  .todo-title {
     font-size: 0.92rem;
     line-height: 1.4;
   }

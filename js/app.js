@@ -488,7 +488,7 @@ class KanbanApp {
           <span class="card-chk-custom"></span>
         </label>
 
-        <span class="card-title ${card.completed ? 'completed-text' : ''}">${this.escapeHtml(card.title)}</span>
+        <span class="todo-title ${card.completed ? 'completed-text' : ''}">${this.escapeHtml(card.title)}</span>
 
         <div class="card-action-menu-wrapper">
           <button type="button" class="card-menu-btn" title="Todo actions" aria-label="Todo actions">
