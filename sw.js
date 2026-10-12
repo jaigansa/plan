@@ -13,7 +13,7 @@
 // A worker cannot use import paths relative to the page, only to itself.
 importScripts('./js/reminder-core.js', './js/plan-store.js');
 
-const CACHE_NAME = 'plan-v13';
+const CACHE_NAME = 'plan-v14';
 const REMINDER_SYNC_TAG = 'plan-reminders';
 
 self.addEventListener('install', (event) => {
