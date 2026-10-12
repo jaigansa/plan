@@ -132,8 +132,8 @@
   /** Build the title/body shown in the notification. */
   function describe(due) {
     return {
-      title: due.title || 'Untitled',
-      body: due.listName || 'Todo'
+      title: due.listName || 'Todo',
+      body: due.title || 'Untitled'
     };
   }
 
