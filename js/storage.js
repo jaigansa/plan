@@ -13,12 +13,7 @@ export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') =
   title,
   theme: 'dark',
   isDefault: true,
-  lists: [
-    { id: 'list-todo', title: 'Plan', color: '#3b82f6', cardIds: [] },
-    { id: 'list-in-progress', title: 'Progress', color: '#eab308', cardIds: [] },
-    { id: 'list-done', title: 'Done', color: '#10b981', cardIds: [] },
-    { id: 'list-drop', title: 'Drop', color: '#64748b', cardIds: [] }
-  ],
+  lists: [],
   cards: {},
   archivedCards: [],
   deletedCardIds: [],
@@ -91,6 +86,15 @@ export class StorageManager {
                   delete b.cards[cId].description;
                 }
               });
+            }
+
+            // If board still has the legacy unedited default starter lists with 0 cards, reset to empty
+            if (b.isDefault && Array.isArray(b.lists) && Object.keys(b.cards || {}).length === 0) {
+              const defaultTitles = ['Plan', 'Progress', 'Done', 'Drop'];
+              const isUntouchedDefault = b.lists.length === 4 && b.lists.every((l, i) => l.title === defaultTitles[i] && (!l.cardIds || l.cardIds.length === 0));
+              if (isUntouchedDefault) {
+                b.lists = [];
+              }
             }
           });
           return parsed;
@@ -311,12 +315,7 @@ export class StorageManager {
   createBoard(title) {
     const id = 'board-' + Date.now();
     const newBoard = createDefaultBoard(id, title || 'New Board');
-    newBoard.lists = [
-      { id: 'list-todo-' + id, title: 'Plan', color: '#3b82f6', cardIds: [] },
-      { id: 'list-prog-' + id, title: 'Progress', color: '#eab308', cardIds: [] },
-      { id: 'list-done-' + id, title: 'Done', color: '#10b981', cardIds: [] },
-      { id: 'list-drop-' + id, title: 'Drop', color: '#64748b', cardIds: [] }
-    ];
+    newBoard.lists = [];
     newBoard.cards = {};
     newBoard.deletedCardIds = [];
     newBoard.deletedListIds = [];
