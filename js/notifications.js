@@ -134,24 +134,34 @@ export class NotificationManager {
       return false;
     }
 
-    const defaultOptions = {
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2300ff66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>',
-      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300ff66"><circle cx="12" cy="12" r="10"/></svg>',
+    // Resolve absolute URLs for icon & badge so Android Chrome service worker and system tray display them reliably
+    const baseUri = new URL('./', window.location.href).href;
+    const defaultIcon = new URL('icon-192.png', baseUri).href;
+    const defaultBadge = new URL('badge-96.png', baseUri).href;
+
+    const notifOptions = {
+      body: options.body || '',
+      icon: options.icon || defaultIcon,
+      badge: options.badge || defaultBadge,
+      tag: options.tag || 'plan-alert-' + Date.now(),
+      renotify: true,
       vibrate: [200, 100, 200],
       requireInteraction: false,
+      silent: false,
+      data: options.data || {},
       ...options
     };
 
-    // Mobile haptic feedback
+    // Mobile haptic feedback if supported
     if (navigator.vibrate) {
       try { navigator.vibrate([150, 80, 150]); } catch {}
     }
 
-    // Try service worker notification first (critical for mobile browser/PWA)
+    // Try service worker notification first (mandatory for Android Chrome)
     const reg = await this.getRegistration();
     if (reg && reg.showNotification) {
       try {
-        await reg.showNotification(title, defaultOptions);
+        await reg.showNotification(title, notifOptions);
         return true;
       } catch (err) {
         console.warn('Service worker showNotification failed, trying window Notification:', err);
@@ -160,7 +170,7 @@ export class NotificationManager {
 
     // Fall back to standard Notification constructor if available
     try {
-      new Notification(title, defaultOptions);
+      new Notification(title, notifOptions);
       return true;
     } catch (err) {
       console.warn('Window Notification failed:', err);

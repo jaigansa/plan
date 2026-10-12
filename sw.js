@@ -13,7 +13,7 @@
 // A worker cannot use import paths relative to the page, only to itself.
 importScripts('./js/reminder-core.js', './js/plan-store.js');
 
-const CACHE_NAME = 'plan-v1';
+const CACHE_NAME = 'plan-v2';
 const REMINDER_SYNC_TAG = 'plan-reminders';
 
 self.addEventListener('install', (event) => {
@@ -73,11 +73,18 @@ async function runReminderCheck() {
 
   for (const item of due) {
     const text = core.describe(item);
+    const iconUrl = new URL('./icon-192.png', self.registration.scope).href;
+    const badgeUrl = new URL('./badge-96.png', self.registration.scope).href;
+
     try {
       await self.registration.showNotification(text.title, {
         body: text.body,
         tag: 'card-alert-' + item.cardId,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2300ff66" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>',
+        icon: iconUrl,
+        badge: badgeUrl,
+        renotify: true,
+        vibrate: [200, 100, 200],
+        requireInteraction: false,
         data: { cardId: item.cardId }
       });
     } catch (err) {
