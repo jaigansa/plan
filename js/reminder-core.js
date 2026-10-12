@@ -133,7 +133,7 @@
   function describe(due) {
     return {
       title: due.title || 'Untitled',
-      body: 'List: "' + (due.listName || 'Todo') + '"'
+      body: due.listName || 'Todo'
     };
   }
 
