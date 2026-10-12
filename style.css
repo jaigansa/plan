@@ -54,23 +54,11 @@ i[data-lucide], svg.lucide {
   stroke-width: 2;
 }
 
-.search-box i[data-lucide], .search-box svg.lucide {
-  width: 0.9rem;
-  height: 0.9rem;
-}
-
 .icon-btn i[data-lucide], .icon-btn svg.lucide {
   width: 1.05rem;
   height: 1.05rem;
 }
 
-.badge i[data-lucide], .badge svg.lucide {
-  width: 0.8rem;
-  height: 0.8rem;
-  margin-right: 3px;
-}
-
-.btn-show-add-card i[data-lucide], .btn-show-add-card svg.lucide,
 #btn-add-list i[data-lucide], #btn-add-list svg.lucide {
   width: 0.95rem;
   height: 0.95rem;
@@ -93,12 +81,6 @@ i[data-lucide], svg.lucide {
   margin-right: 4px;
 }
 
-.comment-author i[data-lucide], .comment-author svg.lucide {
-  width: 0.8rem;
-  height: 0.8rem;
-  margin-right: 3px;
-}
-
 .priority-btn i[data-lucide], .priority-btn svg.lucide {
   width: 0.85rem;
   height: 0.85rem;
@@ -107,25 +89,45 @@ i[data-lucide], svg.lucide {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   overflow-x: hidden;
-  background-color: var(--body-bg);
+  background-color: #030604;
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Fixed Mobile Viewport Frame on Desktop */
+.mobile-app-shell {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--body-bg);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), 0 0 1px var(--border-color);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  position: relative;
+}
+
 /* Header */
 .app-header {
-  height: 56px;
+  height: 52px;
   background: var(--header-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.25rem;
+  padding: 0 1rem;
   color: var(--header-text);
   border-bottom: 1px solid var(--header-border);
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   transition: background 0.25s ease, border-color 0.25s ease;
 }
 
@@ -144,45 +146,133 @@ body {
   gap: 0.4rem;
 }
 
-.board-title-input {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--header-text);
-  font-size: 1.1rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.board-title-input:hover, .board-title-input:focus {
-  background: var(--btn-bg);
-  border-color: var(--border-color);
-}
-
-/* Board Selector (Settings Modal) */
-.board-selector-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+/* Board Manager Card (Settings Modal) */
+.board-manager-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.board-select-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.board-select-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.board-select-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .board-select {
-  flex: 1 1 180px;
-  min-width: 140px;
-  padding: 7px 10px;
+  width: 100%;
+  padding: 9px 34px 9px 12px;
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  background: var(--card-bg);
+  background: var(--bg-primary, #0c1017);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   outline: none;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.board-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.25);
+}
+
+.board-select-chevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--text-secondary);
+  width: 16px;
+  height: 16px;
+}
+
+.board-actions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.board-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+
+.board-action-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.board-action-btn:hover:not(:disabled),
+.board-action-btn:active:not(:disabled) {
+  background: var(--btn-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.board-action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--border-color);
+}
+
+.btn-board-new {
+  border-color: rgba(0, 255, 102, 0.3);
+}
+
+.btn-board-rename {
+  border-color: var(--border-color);
+}
+
+.btn-board-delete {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-board-delete:hover:not(:disabled),
+.btn-board-delete:active:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .icon-btn-sm {
@@ -209,43 +299,6 @@ body {
   cursor: not-allowed;
 }
 
-.btn-del-board:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
-
-.history-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Header Center: Search & Filters */
-.header-center {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  max-width: 580px;
-  margin: 0 1rem;
-}
-
-
-.filter-select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  outline: none;
-  cursor: pointer;
-}
-
-.filter-select:focus {
-  border-color: var(--accent-color);
-}
-
 .header-right {
   display: flex;
   align-items: center;
@@ -269,174 +322,6 @@ body {
   color: var(--text-secondary);
 }
 
-.header-sync-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  font-family: inherit;
-  font-weight: 600;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg, #111);
-  color: var(--text-secondary, #888);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1;
-}
-
-.header-sync-pill svg,
-.header-sync-pill i {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-}
-
-.header-sync-pill.online {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.header-sync-pill.syncing {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.header-sync-pill.error {
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.header-sync-pill.offline {
-  border-color: var(--border-color);
-  background: var(--btn-bg);
-  color: var(--text-secondary);
-}
-
-.header-sync-pill:hover {
-  filter: brightness(1.15);
-}
-
-@keyframes spin-anim {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.spin-icon {
-  animation: spin-anim 1s linear infinite;
-}
-
-.sync-qr-card {
-  margin-top: 12px;
-  padding: 16px 14px;
-  background: var(--card-bg, #040905);
-  border: 1px solid var(--border-color, #1a4f29);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-}
-
-.sync-qr-frame {
-  --qr-bg: var(--card-bg, #040905);
-  --qr-fg: var(--accent-color, #00ff66);
-  background: var(--qr-bg);
-  padding: 12px;
-  border-radius: 8px;
-  border: 2px solid var(--border-color, #1a4f29);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 16px rgba(0, 255, 102, 0.2);
-  transition: all 0.2s ease;
-}
-
-.sync-qr-frame:hover {
-  border-color: var(--accent-color, #00ff66);
-  box-shadow: 0 0 20px rgba(0, 255, 102, 0.35);
-}
-
-.sync-qr-frame svg {
-  display: block;
-  width: 200px;
-  height: 200px;
-  max-width: 100%;
-  border-radius: 4px;
-}
-
-.sync-qr-frame svg rect.qr-bg {
-  fill: var(--qr-bg);
-  transition: fill 0.2s ease;
-}
-
-.sync-qr-frame svg path.qr-modules {
-  fill: var(--qr-fg);
-  transition: fill 0.2s ease;
-}
-
-/* High Contrast / Inverted Mode (Phosphor Green Badge) */
-.sync-qr-frame.qr-contrast-high {
-  --qr-bg: var(--accent-color, #00ff66);
-  --qr-fg: var(--header-bg, #040805);
-  background: var(--qr-bg);
-  border-color: var(--accent-color, #00ff66);
-  box-shadow: 0 0 24px rgba(0, 255, 102, 0.45);
-}
-
-[data-theme="tui-amber"] .sync-qr-frame {
-  --qr-bg: var(--card-bg, #0c0800);
-  --qr-fg: var(--accent-color, #ffb000);
-  border-color: var(--border-color, #4a3400);
-  box-shadow: 0 0 16px rgba(255, 176, 0, 0.2);
-}
-
-[data-theme="tui-amber"] .sync-qr-frame:hover {
-  border-color: #ffb000;
-  box-shadow: 0 0 20px rgba(255, 176, 0, 0.35);
-}
-
-[data-theme="tui-amber"] .sync-qr-frame.qr-contrast-high {
-  --qr-bg: #ffb000;
-  --qr-fg: #0d0800;
-  border-color: #ffb000;
-  box-shadow: 0 0 24px rgba(255, 176, 0, 0.45);
-}
-
-.sync-qr-toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.sync-qr-tip {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin: 0;
-  max-width: 320px;
-}
-
-.sync-qr-alert {
-  font-size: 0.72rem;
-  color: #eab308;
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  border-radius: 4px;
-  padding: 6px 10px;
-  margin-top: 4px;
-  max-width: 340px;
-  text-align: left;
-  line-height: 1.4;
-}
 
 .icon-btn {
   background: var(--btn-bg);
@@ -456,16 +341,17 @@ body {
   background: var(--btn-hover);
 }
 
-/* Board Layout */
+/* Board Layout (Mobile-First / Mobile-Only) */
 .board-container {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  padding: 1.25rem;
-  gap: 1rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  height: calc(100vh - 102px);
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0.75rem 0.65rem 3rem 0.65rem;
+  gap: 1.25rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Modern Scrollbar Styling (Horizontal & Vertical) */
@@ -537,19 +423,11 @@ body {
   border-radius: 999px;
 }
 
-.modal-body::-webkit-scrollbar,
-.search-modal-results-list::-webkit-scrollbar,
-.templates-list-container::-webkit-scrollbar,
-.activity-timeline::-webkit-scrollbar,
-.archive-list::-webkit-scrollbar {
+.modal-body::-webkit-scrollbar {
   width: 5px;
 }
 
-.modal-body::-webkit-scrollbar-thumb,
-.search-modal-results-list::-webkit-scrollbar-thumb,
-.templates-list-container::-webkit-scrollbar-thumb,
-.activity-timeline::-webkit-scrollbar-thumb,
-.archive-list::-webkit-scrollbar-thumb {
+.modal-body::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
@@ -557,9 +435,9 @@ body {
 /* Kanban List / Column */
 .kanban-list {
   background: var(--list-bg);
-  width: 300px;
-  min-width: 300px;
-  max-height: 100%;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   border-radius: 10px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -567,36 +445,17 @@ body {
   transition: transform 0.15s, opacity 0.15s;
   cursor: default;
   border: 1px solid var(--border-color);
+  scroll-margin-top: 104px;
 }
 
-.kanban-list.list-dragging {
-  opacity: 0.4;
-  transform: scale(0.98);
-}
 
-.list-placeholder {
-  width: 300px;
-  min-width: 300px;
-  background: var(--add-list-bg);
-  border: 2px dashed var(--border-color);
-  border-radius: 10px;
-  height: 200px;
-}
 
 .list-header {
   padding: 10px 14px 6px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: grab;
-  /* Long-press on the header reorders the list on touch devices.
-     pan-x/pan-y keeps the board horizontally scrollable from this zone. */
-  touch-action: pan-x pan-y;
   -webkit-touch-callout: none;
-}
-
-.list-header:active {
-  cursor: grabbing;
 }
 
 .list-header-left {
@@ -604,36 +463,6 @@ body {
   align-items: center;
   gap: 8px;
   flex: 1;
-}
-
-.column-color-indicator-btn {
-  background: transparent;
-  border: none;
-  padding: 3px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-.column-color-indicator-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  transform: scale(1.15);
-}
-
-[data-theme="dark"] .column-color-indicator-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.column-color-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s ease;
 }
 
 .list-title-input {
@@ -658,17 +487,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-}
-
-.list-color-picker {
-  width: 20px;
-  height: 20px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  background: transparent;
-  padding: 0;
-  outline: none;
 }
 
 .card-count {
@@ -705,39 +523,6 @@ body {
   background: rgba(239, 68, 68, 0.1);
 }
 
-/* Cloud sync toggle for the whole list (shared-cards sync mode only) */
-.list-share-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  opacity: 0.5;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
-}
-
-.list-share-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
-.list-share-btn:hover {
-  opacity: 1;
-  color: var(--accent-color);
-  background: var(--btn-hover);
-}
-
-.list-share-btn.shared {
-  opacity: 1;
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 35%, transparent);
-}
 
 /* Cards Container */
 .cards-container {
@@ -779,18 +564,6 @@ body {
   padding-top: 8px;
 }
 
-.kanban-card .card-labels {
-  padding-top: 8px;
-}
-
-.kanban-card .card-footer {
-  padding-bottom: 8px;
-}
-
-.kanban-card.is-dragging {
-  opacity: 0.35;
-  transform: scale(0.95);
-}
 
 /* Quick Add Input Bar at Top of List */
 .list-quick-add {
@@ -891,27 +664,6 @@ body {
   gap: 4px;
 }
 
-.card-placeholder {
-  background: rgba(59, 130, 246, 0.08);
-  border: 2px dashed var(--accent-color);
-  border-radius: 8px;
-  min-height: 48px;
-  margin: 2px 0;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent-color);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-align: center;
-}
-
-[data-theme="dark"] .card-placeholder {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: #3b82f6;
-}
 
 /* Card Main Row: Drag Grip, Checkbox, Title, Quick Delete */
 .card-main-row {
@@ -921,30 +673,6 @@ body {
   padding: 8px 10px;
 }
 
-.card-drag-grip {
-  color: var(--text-secondary);
-  opacity: 0.35;
-  cursor: grab;
-  touch-action: none;
-  -webkit-user-drag: element;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  transition: opacity 0.15s;
-}
-
-.card-drag-grip:active {
-  cursor: grabbing;
-}
-
-.kanban-card:hover .card-drag-grip {
-  opacity: 0.75;
-}
-
-.card-drag-grip svg {
-  width: 15px;
-  height: 15px;
-}
 
 .card-complete-toggle {
   display: inline-flex;
@@ -1038,335 +766,6 @@ body {
   height: 14px;
 }
 
-/* Card Metadata Row */
-.card-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px 8px 33px;
-  font-size: 0.72rem;
-  gap: 6px;
-}
-
-.card-meta-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.priority-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-  font-family: var(--tui-font);
-  font-weight: 700;
-  font-size: 0.68rem;
-  letter-spacing: 0.2px;
-  background: transparent;
-  border: 1px dashed var(--border-color);
-  color: var(--text-secondary);
-  transition: opacity 0.15s, transform 0.1s, background-color 0.15s;
-  flex-shrink: 0;
-}
-
-.priority-badge:hover {
-  opacity: 0.85;
-  transform: scale(1.05);
-}
-
-.priority-badge-none {
-  border: 1px dashed var(--border-color);
-  color: var(--text-secondary);
-  opacity: 0.5;
-}
-
-.priority-badge-none:hover {
-  opacity: 1;
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-/* Modern Card Progress Bar */
-.card-progress {
-  margin: 8px 0 10px 0;
-  width: 100%;
-}
-
-.card-progress-bar {
-  height: 6px;
-  background: rgba(0, 0, 0, 0.07);
-  border-radius: 999px;
-  overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .card-progress-bar {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
-}
-
-.card-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #6366f1);
-  border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.35);
-}
-
-.card-progress-fill.complete {
-  background: linear-gradient(90deg, #10b981, #059669);
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.4);
-}
-
-/* Modern Card On-Face Checklist */
-.card-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 8px 0 10px 0;
-}
-
-.card-checklist-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: var(--card-text);
-  padding: 5px 8px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid transparent;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-[data-theme="dark"] .card-checklist-item {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.card-checklist-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="dark"] .card-checklist-item:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.card-checklist-item.is-done {
-  opacity: 0.65;
-  background: transparent;
-}
-
-.card-checklist-item.is-done .card-chk-text {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-
-/* Custom Modern Checkbox Styling */
-.card-chk-box {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1.8px solid var(--text-secondary);
-  border-radius: 4px;
-  outline: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: transparent;
-  flex-shrink: 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-chk-box:hover {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
-}
-
-.card-chk-box:checked {
-  background: #10b981;
-  border-color: #10b981;
-  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.35);
-}
-
-.card-chk-box:checked::after {
-  content: '';
-  position: absolute;
-  width: 4.5px;
-  height: 8.5px;
-  border: solid #ffffff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translate(-0.5px, -0.5px);
-}
-
-.card-chk-text {
-  flex: 1;
-  word-break: break-word;
-  line-height: 1.3;
-}
-
-.card-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--text-secondary);
-  background: rgba(0, 0, 0, 0.05);
-}
-
-/* Simple Color Dot Circle & Priority Pill (Border removed) */
-.card-priority-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.04);
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: 0.1px;
-}
-
-[data-theme="dark"] .card-priority-pill {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.color-dot-circle {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: inline-block;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
-}
-
-/* Priority Badges */
-.priority-badge {
-  font-weight: 700;
-  font-size: 0.7rem;
-  letter-spacing: 0.2px;
-}
-.priority-badge-urgent {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-.priority-badge-high {
-  background: rgba(249, 115, 22, 0.15);
-  color: #f97316;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-.priority-badge-medium {
-  background: rgba(234, 179, 8, 0.15);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-}
-.priority-badge-low {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.checklist-badge.complete {
-  background: #10b981;
-  color: #fff;
-}
-
-/* Due Date Badges */
-.due-badge.overdue {
-  background: #ef4444;
-  color: #fff;
-}
-.due-badge.today {
-  background: #f97316;
-  color: #fff;
-  font-weight: 600;
-}
-.due-badge.tomorrow {
-  background: #eab308;
-  color: #000;
-  font-weight: 600;
-}
-.due-badge.upcoming {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text-secondary);
-}
-[data-theme="dark"] .due-badge.upcoming {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* Comment Badge */
-.comment-badge {
-  color: var(--text-secondary);
-}
-
-/* Add Card Composer */
-.add-card-wrapper {
-  padding: 8px 10px;
-}
-
-.btn-show-add-card {
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-weight: 500;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.88rem;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-show-add-card:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--card-text);
-}
-
-[data-theme="dark"] .btn-show-add-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.add-card-form textarea {
-  width: 100%;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--card-text);
-  padding: 8px;
-  font-size: 0.88rem;
-  outline: none;
-  resize: vertical;
-  margin-bottom: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.add-card-buttons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .btn-confirm-add {
   display: inline-flex;
   align-items: center;
@@ -1403,20 +802,6 @@ body {
 .btn-confirm-add:active {
   transform: translateY(0);
   box-shadow: 0 0 6px rgba(0, 255, 102, 0.25);
-}
-
-[data-theme="tui-amber"] .btn-confirm-add {
-  color: #0d0800;
-  box-shadow: 0 0 10px rgba(255, 176, 0, 0.4);
-}
-
-.btn-cancel-add {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0 6px;
 }
 
 /* Add List Section */
@@ -1580,224 +965,6 @@ body.modal-open {
   outline: none;
 }
 
-/* Modern Checklist in modal */
-.checklist-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.progress-track {
-  flex: 1;
-  height: 9px;
-  background: rgba(0, 0, 0, 0.07);
-  border-radius: 999px;
-  overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .progress-track {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  width: 0%;
-  border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
-}
-
-.checklist-items {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.checklist-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--body-bg);
-  border: 1px solid var(--border-color);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.checklist-item:hover {
-  background: var(--btn-hover);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.checklist-item.is-completed {
-  opacity: 0.7;
-  background: rgba(0, 0, 0, 0.015);
-}
-
-[data-theme="dark"] .checklist-item.is-completed {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.checklist-item.is-completed label {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-
-.checklist-item input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--text-secondary);
-  border-radius: 5px;
-  outline: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: transparent;
-  flex-shrink: 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.checklist-item input[type="checkbox"]:hover {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.checklist-item input[type="checkbox"]:checked {
-  background: #10b981;
-  border-color: #10b981;
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
-}
-
-.checklist-item input[type="checkbox"]:checked::after {
-  content: '';
-  position: absolute;
-  width: 5px;
-  height: 9.5px;
-  border: solid #ffffff;
-  border-width: 0 2.2px 2.2px 0;
-  transform: rotate(45deg) translate(-0.5px, -0.5px);
-}
-
-.checklist-item label {
-  flex: 1;
-  font-size: 0.92rem;
-  cursor: pointer;
-  line-height: 1.35;
-  color: var(--text-primary);
-  user-select: none;
-}
-
-.checklist-del-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  opacity: 0.5;
-}
-
-.checklist-item:hover .checklist-del-btn {
-  opacity: 1;
-}
-
-.checklist-del-btn:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.add-checklist-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.add-checklist-row input {
-  flex: 1;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-primary);
-  font-size: 0.88rem;
-  outline: none;
-}
-
-.add-checklist-row button, .add-label-row button {
-  background: var(--accent-color);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-/* Labels in modal */
-.labels-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.label-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #fff;
-}
-
-.label-remove-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.add-label-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.add-label-row input[type="text"] {
-  flex: 1;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-primary);
-  font-size: 0.88rem;
-}
-
-.add-label-row input[type="color"] {
-  border: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
-  cursor: pointer;
-  background: transparent;
-}
-
 /* Priority Selector in Modal */
 .priority-selector {
   display: flex;
@@ -1843,40 +1010,6 @@ body.modal-open {
 
 [data-theme^="tui"] .priority-btn {
   border-radius: 0;
-}
-
-/* Due status in modal */
-.due-status-badge {
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-.due-status-badge.overdue {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-.due-status-badge.today {
-  background: rgba(249, 115, 22, 0.15);
-  color: #f97316;
-}
-.due-status-badge.tomorrow {
-  background: rgba(234, 179, 8, 0.15);
-  color: #eab308;
-}
-.due-status-badge.upcoming {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.btn-sm-secondary {
-  background: var(--btn-bg);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
 }
 
 /* Modal Footer */
@@ -1957,88 +1090,6 @@ body.modal-open {
   line-height: 1.45;
 }
 
-/* Storage Mode Segmented Switch */
-.storage-mode-switch {
-  display: flex;
-  background: var(--bg-primary, #0c1017);
-  border: 1px solid var(--border-color, #1f2937);
-  border-radius: 8px;
-  padding: 3px;
-  gap: 4px;
-  margin-bottom: 0.75rem;
-}
-
-.storage-mode-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 12px;
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary, #94a3b8);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.storage-mode-btn i,
-.storage-mode-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-.storage-mode-btn:hover {
-  color: var(--text-primary, #f8fafc);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.storage-mode-btn.active {
-  color: var(--accent-green, #10b981);
-  background: var(--card-bg, #1e293b);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  border-color: var(--border-color, #334155);
-}
-
-.storage-mode-note {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
-  color: var(--text-secondary, #94a3b8);
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin-bottom: 0.85rem;
-  line-height: 1.4;
-}
-
-.storage-mode-note.cloud-mode {
-  background: rgba(59, 130, 246, 0.06);
-  border-color: rgba(59, 130, 246, 0.2);
-}
-
-.storage-mode-note i,
-.storage-mode-note svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  color: var(--accent-green, #10b981);
-}
-
-.storage-mode-note.cloud-mode i,
-.storage-mode-note.cloud-mode svg {
-  color: var(--accent-blue, #3b82f6);
-}
-
-.supabase-fields-container {
-  margin-top: 0.5rem;
-}
 
 /* Keyboard Shortcuts Grid */
 .shortcuts-grid {
@@ -2269,57 +1320,6 @@ kbd {
   background: var(--btn-hover);
 }
 
-.notif-intervals-card {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 8px 10px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  margin-top: 6px;
-}
-
-.notif-interval-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
-  color: var(--text-primary);
-}
-
-.notif-dot {
-  font-size: 0.8rem;
-  line-height: 1;
-}
-
-.notif-dot.red { color: #ef4444; }
-.notif-dot.orange { color: #f97316; }
-.notif-dot.yellow { color: #eab308; }
-.notif-dot.green { color: #10b981; }
-.notif-dot.gray { color: var(--text-secondary); }
-
-.notif-name {
-  font-weight: 700;
-  width: 65px;
-}
-
-.notif-time {
-  color: var(--text-secondary);
-}
-
-.notif-disabled-rule {
-  opacity: 0.65;
-  border-top: 1px dashed var(--border-color);
-  padding-top: 4px;
-  margin-top: 2px;
-}
-
-.notif-hint-text {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  margin-top: 6px;
-}
 
 /* ==========================================================================
    Multi-Day Selector Chips (Used in Kanban List Footer Quick-Add)
@@ -2377,50 +1377,6 @@ kbd {
   box-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
 }
 
-/* View Switcher (Board vs Calendar) */
-.view-switcher {
-  display: flex;
-  align-items: center;
-  background: var(--btn-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 2px;
-  gap: 2px;
-}
-
-.view-tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.view-tab-btn:hover {
-  color: var(--text-primary);
-}
-
-.view-tab-btn.active {
-  background: var(--card-bg);
-  color: var(--accent-color);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Touch Drag and Drop Mobile Styles */
-.touch-drag-clone {
-  pointer-events: none !important;
-  user-select: none !important;
-  z-index: 99999 !important;
-  cursor: grabbing !important;
-  box-sizing: border-box !important;
-}
 
 .kanban-card {
   touch-action: pan-x pan-y;
@@ -2430,82 +1386,6 @@ kbd {
 /* Utilities */
 .hidden {
   display: none !important;
-}
-
-/* Modern Color Palette Popover Platter */
-.modern-color-palette-popover {
-  position: fixed;
-  z-index: 100000;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
-  padding: 12px;
-  width: 210px;
-  animation: popoverFadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes popoverFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.palette-header {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.palette-swatches-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.palette-swatch-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  outline: none;
-}
-
-.palette-swatch-btn:hover {
-  transform: scale(1.18);
-  border-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-}
-
-.palette-custom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-color);
-}
-
-.palette-native-input {
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  background: transparent;
-  padding: 0;
-  outline: none;
 }
 
 /* ==========================================================================
@@ -2523,8 +1403,7 @@ kbd {
 [data-theme^="tui"] .app-header,
 [data-theme^="tui"] .kanban-list,
 [data-theme^="tui"] .kanban-card,
-[data-theme^="tui"] .modal-card,
-[data-theme^="tui"] .tui-status-bar {
+[data-theme^="tui"] .modal-card {
   font-family: var(--tui-font) !important;
   -webkit-font-smoothing: antialiased;
 }
@@ -2539,16 +1418,8 @@ kbd {
 /* Subtle phosphor glow on headings and main titles */
 [data-theme="tui"] .app-logo,
 [data-theme="tui"] .list-title,
-[data-theme="tui"] .modal-header h3,
-[data-theme="tui"] .tui-mode-tag {
+[data-theme="tui"] .modal-header h3 {
   text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
-}
-
-[data-theme="tui-amber"] .app-logo,
-[data-theme="tui-amber"] .list-title,
-[data-theme="tui-amber"] .modal-header h3,
-[data-theme="tui-amber"] .tui-mode-tag {
-  text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
 }
 
 /* Terminal App Header */
@@ -2563,47 +1434,10 @@ kbd {
   color: var(--accent-color);
 }
 
-[data-theme^="tui"] .board-title-input {
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-primary);
-  padding: 4px 10px;
-}
-
-[data-theme^="tui"] .board-title-input:focus {
-  border-color: var(--tui-border-active);
-  box-shadow: var(--card-hover-shadow);
-}
-
-/* View switcher (Board / Calendar) */
-[data-theme^="tui"] .view-switcher {
-  border: 1px solid var(--border-color);
-  background: var(--header-bg);
-  padding: 2px;
-  gap: 2px;
-}
-
-[data-theme^="tui"] .view-tab-btn {
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 10px;
-}
-
-[data-theme^="tui"] .view-tab-btn.active {
-  background: var(--btn-bg);
-  border-color: var(--tui-border-active);
-  color: var(--text-primary);
-}
-
 /* Header & General Buttons in TUI */
 [data-theme^="tui"] .icon-btn,
 [data-theme^="tui"] .icon-btn-sm,
 [data-theme^="tui"] .primary-header-btn,
-[data-theme^="tui"] .btn-show-add-card,
 [data-theme^="tui"] #btn-add-list {
   border: 1px solid var(--border-color);
   background: var(--btn-bg);
@@ -2614,8 +1448,7 @@ kbd {
 }
 
 [data-theme^="tui"] .icon-btn:hover,
-[data-theme^="tui"] .icon-btn-sm:hover,
-[data-theme^="tui"] .btn-show-add-card:hover,
+[data-theme^="tui"] .icon-btn-sm:hover:hover,
 [data-theme^="tui"] #btn-add-list:hover {
   background: var(--btn-hover);
   border-color: var(--tui-border-active);
@@ -2627,10 +1460,6 @@ kbd {
 [data-theme^="tui"] .board-container {
   height: calc(100vh - 56px - var(--tui-bar-height, 28px));
   padding: 1rem;
-}
-
-[data-theme^="tui"] .calendar-container {
-  height: calc(100vh - 56px - var(--tui-bar-height, 28px));
 }
 
 [data-theme^="tui"] .kanban-list {
@@ -2650,15 +1479,6 @@ kbd {
   font-weight: 700;
   letter-spacing: 0.5px;
   font-size: 0.88rem;
-}
-
-[data-theme^="tui"] .list-card-count {
-  background: var(--btn-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  padding: 1px 6px;
-  font-weight: 700;
 }
 
 /* Terminal Cards */
@@ -2734,88 +1554,6 @@ kbd {
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.2px;
-}
-
-[data-theme^="tui"] .card-desc {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  border-left: 2px solid var(--border-color);
-  padding-left: 8px;
-  margin-top: 6px;
-}
-
-/* Terminal Badges (Priority, Labels, Due, Checklist) */
-[data-theme^="tui"] .card-priority-pill {
-  border: 1px solid var(--border-color);
-  background: var(--btn-bg);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 2px 6px;
-}
-
-[data-theme^="tui"] .card-priority-pill .color-dot-circle {
-  border-radius: 0 !important;
-  width: 6px;
-  height: 6px;
-}
-
-[data-theme^="tui"] .card-label-badge {
-  border: 1px solid var(--border-color);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 1px 6px;
-}
-
-[data-theme^="tui"] .badge {
-  border: 1px solid var(--border-color);
-  background: var(--btn-bg);
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  padding: 2px 6px;
-  font-weight: 600;
-}
-
-[data-theme^="tui"] .badge.due-badge.overdue {
-  border-color: #ef4444;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.12);
-}
-
-[data-theme^="tui"] .badge.due-badge.due-soon {
-  border-color: #f59e0b;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.12);
-}
-
-[data-theme^="tui"] .badge.checklist-badge.complete {
-  border-color: var(--tui-border-active);
-  color: var(--tui-border-active);
-}
-
-/* Card Progress Meter */
-[data-theme^="tui"] .card-progress-bar {
-  border: 1px solid var(--border-color);
-  background: var(--header-bg);
-  height: 6px;
-}
-
-[data-theme^="tui"] .card-progress-fill {
-  background: var(--accent-color);
-}
-
-/* TUI Checklist Item Checkboxes */
-[data-theme^="tui"] .card-checklist-item {
-  border-top: 1px dashed var(--border-color);
-  padding: 4px 0;
-}
-
-[data-theme^="tui"] .card-chk-box,
-[data-theme^="tui"] .checklist-chk {
-  accent-color: var(--accent-color);
-  cursor: pointer;
 }
 
 /* Add List column wrapper */
@@ -2916,33 +1654,6 @@ kbd {
   box-shadow: none;
 }
 
-/* Fuzzy Finder / Search Modal */
-[data-theme^="tui"] .search-modal-box {
-  border: 2px solid var(--tui-border-active);
-  background: var(--modal-bg);
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.95), var(--card-hover-shadow);
-}
-
-[data-theme^="tui"] .search-modal-input-row {
-  border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme^="tui"] .search-modal-input-row input {
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-}
-
-[data-theme^="tui"] .search-result-card {
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  margin-bottom: 6px;
-}
-
-[data-theme^="tui"] .search-result-card:hover {
-  border-color: var(--tui-border-active);
-  box-shadow: var(--card-hover-shadow);
-}
-
 /* TUI Overrides for Quick Add & Todo Entries */
 [data-theme^="tui"] .quick-add-form {
   border: 1px dashed var(--border-color);
@@ -2982,123 +1693,6 @@ kbd {
   border-radius: 0;
 }
 
-/* ==========================================================================
-   List Navigation Switcher (Desktop & Mobile)
-   ========================================================================== */
-.mobile-list-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 1.25rem;
-  overflow-x: auto;
-  white-space: nowrap;
-  background: rgba(4, 9, 5, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-  scrollbar-width: none;
-  position: sticky;
-  top: 0;
-  z-index: 15;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mobile-list-nav::-webkit-scrollbar {
-  display: none;
-}
-
-.mobile-nav-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 14px;
-  border: 1px solid var(--border-color);
-  background: rgba(12, 22, 14, 0.7);
-  color: var(--text-secondary);
-  font-family: var(--tui-font);
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-  flex-shrink: 0;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  line-height: 1;
-}
-
-[data-theme^="tui"] .mobile-nav-pill {
-  border-radius: 0;
-}
-
-.mobile-nav-pill:hover {
-  border-color: rgba(0, 255, 102, 0.6);
-  color: var(--text-primary);
-  background: rgba(0, 255, 102, 0.08);
-  transform: translateY(-1px);
-}
-
-.mobile-nav-pill:active {
-  transform: scale(0.96);
-}
-
-.mobile-nav-pill.active {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: rgba(0, 255, 102, 0.16);
-  box-shadow: 0 0 10px rgba(0, 255, 102, 0.3), inset 0 -2px 0 var(--accent-color);
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
-}
-
-/* Held pill: lifted out of the bar while the list order follows the finger.
-   Declared after :hover/:active so it wins while the finger stays down. */
-.mobile-nav-pill.pill-dragging {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: rgba(0, 255, 102, 0.18);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  transform: translateY(-2px) scale(1.04);
-  cursor: grabbing;
-  position: relative;
-  z-index: 2;
-}
-
-.mobile-nav-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 140px;
-}
-
-.mobile-nav-count {
-  font-size: 0.68rem;
-  font-weight: 700;
-  font-family: var(--tui-font);
-  padding: 1px 6px;
-  border-radius: 3px;
-  transition: all 0.15s ease;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-
-[data-theme^="tui"] .mobile-nav-count {
-  border-radius: 0;
-}
-
-.mobile-nav-pill:hover .mobile-nav-count {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.mobile-nav-pill.active .mobile-nav-count {
-  background: var(--accent-color);
-  color: #030704;
-  border-color: var(--accent-color);
-  font-weight: 800;
-  box-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
-}
 
 /* ==========================================================================
    Mobile UI/UX Enhancements (max-width: 768px)
@@ -3108,6 +1702,14 @@ kbd {
     height: 100%;
     min-height: 100dvh;
     overflow-x: hidden;
+    background-color: var(--body-bg);
+  }
+
+  .mobile-app-shell {
+    max-width: 100%;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
   }
 
   /* Compact Header */
@@ -3128,41 +1730,12 @@ kbd {
     gap: 0.45rem;
   }
 
-  .header-sync-pill {
-    padding: 4px 7px;
-    font-size: 0.68rem;
-    gap: 4px;
-  }
-
   .primary-header-btn {
     padding: 5px 8px;
     font-size: 0.78rem;
   }
 
-  /* Mobile List Switcher Pill Bar Overrides */
-  .mobile-list-nav {
-    padding: 8px 10px;
-    top: 48px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .mobile-list-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-nav-pill {
-    padding: 6px 12px;
-    font-size: 0.78rem;
-    min-height: 32px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .mobile-nav-count {
-    font-size: 0.65rem;
-    padding: 2px 6px;
-  }
-
+  
   /* Vertical Stacked Kanban Board Container on Mobile */
   .board-container {
     flex-direction: column;
@@ -3190,14 +1763,7 @@ kbd {
   }
 
   /* Match the stacked full-width columns instead of the 300px desktop rail */
-  .list-placeholder {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    height: 120px;
-    border-radius: 10px;
-  }
-
+  
   .add-list-wrapper {
     width: 100%;
     min-width: 0;
@@ -3289,31 +1855,7 @@ kbd {
   }
 
   /* Card drag grip handle on mobile: generous touch target for quick dragging */
-  .card-drag-grip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px;
-    min-height: 30px;
-    padding: 6px;
-    margin: -6px 0 -6px -6px;
-    opacity: 0.65;
-    cursor: grab;
-    touch-action: none; /* Prevents scroll interference when dragging from grip */
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .card-drag-grip:active {
-    cursor: grabbing;
-    opacity: 1;
-    color: var(--accent-color);
-  }
-
-  .card-drag-grip svg {
-    width: 18px;
-    height: 18px;
-  }
-
+  
   /* Quick Add Bar */
   .list-quick-add {
     padding: 6px 8px 6px 8px;
@@ -3391,10 +1933,401 @@ kbd {
     margin-bottom: 16px;
   }
 
-  /* Hide CRT scanlines on mobile for battery and rendering performance */
-  .tui-crt-lines {
-    display: none !important;
   }
+
+
+
+
+/* Mobile-Only Action Controls */
+.btn-list-move {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-list-move svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-list-move:hover:not(:disabled),
+.btn-list-move:active:not(:disabled) {
+  background: var(--btn-hover);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.btn-list-move:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.card-action-menu-wrapper {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.card-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-menu-btn svg,
+.card-menu-btn i {
+  width: 16px;
+  height: 16px;
+}
+
+.card-menu-btn:hover,
+.card-menu-btn:active {
+  opacity: 1;
+  color: var(--accent-color);
+  background: var(--btn-hover);
+}
+
+/* Card Action Dropdown - Full Screen View */
+.card-action-dropdown {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--modal-overlay, rgba(0, 0, 0, 0.75));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.card-action-dropdown.is-open {
+  display: flex;
+  animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Card Action Dialog Container inside the full-screen view */
+.card-action-dropdown .card-dropdown-topbar,
+.card-action-dropdown .card-dropdown-section,
+.card-action-dropdown .dropdown-divider {
+  width: 100%;
+}
+
+.card-action-dropdown {
+  flex-direction: column;
+}
+
+/* Wrapper to render the dialog content box */
+.card-action-dropdown::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* The actual modal dialog panel inside the full screen overlay */
+.card-action-dropdown-content,
+.card-action-dropdown > * {
+  z-index: 2;
+}
+
+/* Modal panel styling for the full-screen view */
+.card-action-dropdown {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-bg, #070e09);
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-action-dropdown.is-open {
+  display: flex;
+  animation: fullscreenIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fullscreenIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card-dropdown-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--header-bg, #0d1a10);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.card-dropdown-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+}
+
+.dropdown-header-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-color);
+}
+
+.dropdown-card-title-preview {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.card-dropdown-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+  margin-top: -4px;
+  transition: color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-dropdown-close-btn:hover,
+.card-dropdown-close-btn:active {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.card-dropdown-section {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-dropdown-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.dropdown-header-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dropdown-header-badge.prio-low {
+  color: #10b981;
+  border-color: #10b981;
+}
+
+.dropdown-header-badge.prio-medium {
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.dropdown-header-badge.prio-high {
+  color: #f97316;
+  border-color: #f97316;
+}
+
+.dropdown-header-badge.prio-urgent {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.card-prio-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.card-prio-opt {
+  font-size: 0.82rem;
+  padding: 10px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme^="tui"] .card-prio-opt {
+  border-radius: 0;
+}
+
+.card-prio-opt:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+.card-prio-opt.is-selected {
+  background: var(--accent-color);
+  color: #040805;
+  border-color: var(--accent-color);
+  font-weight: 700;
+}
+
+.card-prio-opt.prio-low.is-selected {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.card-prio-opt.prio-medium.is-selected {
+  background: #f59e0b;
+  color: #040805;
+  border-color: #f59e0b;
+}
+
+.card-prio-opt.prio-high.is-selected {
+  background: #f97316;
+  color: #fff;
+  border-color: #f97316;
+}
+
+.card-prio-opt.prio-urgent.is-selected {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0;
+  opacity: 0.5;
+}
+
+.card-dropdown-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s, color 0.12s, border-color 0.12s, transform 0.08s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme^="tui"] .card-menu-item {
+  border-radius: 0;
+}
+
+.card-menu-item svg,
+.card-menu-item i {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.card-menu-item:hover:not(:disabled),
+.card-menu-item:active:not(:disabled) {
+  background: var(--btn-hover);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.card-menu-item:hover:not(:disabled) svg,
+.card-menu-item:active:not(:disabled) svg {
+  color: var(--accent-color);
+}
+
+.card-menu-item:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+.card-menu-item.card-item-delete {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.card-menu-item.card-item-delete svg,
+.card-menu-item.card-item-delete i {
+  color: #ef4444;
+}
+
+.card-menu-item.card-item-delete:hover:not(:disabled),
+.card-menu-item.card-item-delete:active:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 

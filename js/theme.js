@@ -12,10 +12,6 @@ export class ThemeManager {
     this.applyTheme();
   }
 
-  getTheme() {
-    return 'tui';
-  }
-
   applyTheme() {
     document.documentElement.setAttribute('data-theme', 'tui');
   }

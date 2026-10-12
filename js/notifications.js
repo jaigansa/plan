@@ -1,16 +1,15 @@
 /**
  * Notification Manager for plan
+ * - Mobile & PWA optimized push / local notifications
  * - Master Enable / Disable toggle
- * - Fixed default priority intervals:
+ * - Fixed priority reminder intervals:
  *     Urgent: 5 min
  *     High: 15 min
  *     Medium: 30 min
  *     Low: 60 min
  *     None: Disabled
- * - Multi-day assignment support: M, T, W, R, F, S, U
- *     (M=Mon, T=Tue, W=Wed, R=Thu, F=Fri, S=Sat, U=Sun)
- * - Decision logic lives in reminder-core.js so the page and the service
- *   worker always agree on what is due.
+ * - Day assignment support: M, T, W, R, F, S, U
+ * - Service Worker + PeriodicSync + Visibility change fallback
  */
 
 const Core = (typeof self !== 'undefined' && self.PlanReminderCore) || null;
@@ -36,11 +35,39 @@ export class NotificationManager {
   async initServiceWorker() {
     if ('serviceWorker' in navigator) {
       try {
-        this.swRegistration = await navigator.serviceWorker.register('./sw.js');
+        this.swRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        // Request background sync once worker is active
+        if (this.swRegistration.active) {
+          this.requestBackgroundSync();
+        } else {
+          this.swRegistration.addEventListener('updatefound', () => {
+            const installing = this.swRegistration.installing;
+            if (installing) {
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'activated') {
+                  this.requestBackgroundSync();
+                }
+              });
+            }
+          });
+        }
       } catch (err) {
         console.warn('Service worker registration failed:', err);
       }
     }
+  }
+
+  async getRegistration() {
+    if (this.swRegistration) return this.swRegistration;
+    if ('serviceWorker' in navigator) {
+      try {
+        this.swRegistration = await navigator.serviceWorker.ready;
+        return this.swRegistration;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
   }
 
   isSupported() {
@@ -54,13 +81,31 @@ export class NotificationManager {
 
   async requestPermission() {
     if (!this.isSupported()) return 'denied';
-    const permission = await Notification.requestPermission();
-    return permission;
+    try {
+      // Direct user gesture promise
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        this.syncMirror();
+        this.startScheduler();
+      }
+      return permission;
+    } catch (err) {
+      // Fallback for older callback-based browsers
+      return new Promise((resolve) => {
+        Notification.requestPermission((perm) => {
+          if (perm === 'granted') {
+            this.syncMirror();
+            this.startScheduler();
+          }
+          resolve(perm);
+        });
+      });
+    }
   }
 
   isEnabled() {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw === null) return true; // Default to enabled if user grants permission
+    if (raw === null) return true;
     try {
       const data = JSON.parse(raw);
       return data.enabled !== false;
@@ -72,9 +117,11 @@ export class NotificationManager {
   setEnabled(enabled) {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({ enabled: Boolean(enabled) }));
     if (enabled) {
+      this.syncMirror();
       this.startScheduler();
     } else {
       this.stopScheduler();
+      this.syncMirror();
     }
   }
 
@@ -90,46 +137,50 @@ export class NotificationManager {
     const defaultOptions = {
       icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2300ff66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>',
       badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300ff66"><circle cx="12" cy="12" r="10"/></svg>',
+      vibrate: [200, 100, 200],
+      requireInteraction: false,
       ...options
     };
 
-    // Mobile haptic vibration if supported
+    // Mobile haptic feedback
     if (navigator.vibrate) {
       try { navigator.vibrate([150, 80, 150]); } catch {}
     }
 
-    // Try service worker notification first (for background / PWA reliability)
-    if (this.swRegistration && this.swRegistration.showNotification) {
+    // Try service worker notification first (critical for mobile browser/PWA)
+    const reg = await this.getRegistration();
+    if (reg && reg.showNotification) {
       try {
-        await this.swRegistration.showNotification(title, defaultOptions);
+        await reg.showNotification(title, defaultOptions);
         return true;
       } catch (err) {
-        // Fall back to standard Notification constructor
+        console.warn('Service worker showNotification failed, trying window Notification:', err);
       }
     }
 
+    // Fall back to standard Notification constructor if available
     try {
       new Notification(title, defaultOptions);
       return true;
     } catch (err) {
-      console.warn('Notification failed:', err);
+      console.warn('Window Notification failed:', err);
       return false;
     }
   }
 
   async sendTestNotification() {
-    const perm = this.getPermission();
+    let perm = this.getPermission();
     if (perm !== 'granted') {
-      const newPerm = await this.requestPermission();
-      if (newPerm !== 'granted') {
-        alert('Notification permission is not granted. Please allow notifications in your browser settings.');
+      perm = await this.requestPermission();
+      if (perm !== 'granted') {
+        alert('Notification permission is not granted. Please allow notifications in your mobile browser settings.');
         return false;
       }
     }
 
     return this.sendNotification('plan Test Notification', {
       body: 'Notifications are working! You will receive priority alerts on your assigned days.',
-      tag: 'todoflow-test'
+      tag: 'plan-test-alert'
     });
   }
 
@@ -140,22 +191,21 @@ export class NotificationManager {
     // Check immediately on startup
     this.checkAndNotify();
 
-    // Check periodically every 30 seconds while the tab is open. This is the
-    // fallback for browsers without periodicsync; the service worker covers
-    // the closed-tab case where it is available.
+    // Check periodically every 30 seconds while tab/app is open
     this.timerId = setInterval(() => {
       this.checkAndNotify();
     }, 30000);
 
-    // Publish data for the worker and ask for background wake-ups.
+    // Keep service worker mirror up to date
     this.syncMirror();
 
-    // A tab left open but idle/backgrounded still runs the interval, so also
-    // re-check whenever the user comes back to the tab.
     if (!this.visibilityBound) {
       this.visibilityBound = true;
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') this.checkAndNotify();
+        if (document.visibilityState === 'visible') {
+          this.checkAndNotify();
+          this.syncMirror();
+        }
       });
     }
   }
@@ -168,18 +218,7 @@ export class NotificationManager {
   }
 
   /**
-   * Fire any reminders that are due right now.
-   *
-   * The decision itself is delegated to reminder-core so the service worker
-   * applies identical rules. This method only adds the browser bits: sending
-   * the notification, persisting lastNotifiedAt, and refreshing the SW mirror
-   * so a background run does not re-fire the same card.
-   *
-   * @param {object} [opts]
-   * @param {object} [opts.data]   board data to evaluate (defaults to active)
-   * @param {number} [opts.now]    epoch ms, injectable for tests
-   * @param {boolean} [opts.persist] write lastNotifiedAt back (default true)
-   * @returns {Promise<Array>} the reminders that fired
+   * Check for due reminders and display notifications
    */
   async checkAndNotify(opts) {
     const options = opts || {};
@@ -207,17 +246,10 @@ export class NotificationManager {
       this.app.storage.saveLocal(data);
     }
 
-    // Keep the worker's copy in step so it does not repeat these reminders.
     this.syncMirror();
-
     return due;
   }
 
-  /**
-   * Publish the active board + reminder settings where the service worker can
-   * read them (IndexedDB, since workers cannot see localStorage), then ask the
-   * browser to schedule background checks.
-   */
   syncMirror() {
     if (!this.app || !this.app.storage) return Promise.resolve();
     if (typeof self === 'undefined' || !self.PlanStore) return Promise.resolve();
@@ -231,7 +263,7 @@ export class NotificationManager {
 
     return self.PlanStore.putMirror(payload)
       .then(() => this.requestBackgroundSync())
-      .catch((err) => { console.warn('Reminder mirror failed:', err); });
+      .catch((err) => { console.warn('Reminder mirror sync failed:', err); });
   }
 
   getSettings() {
@@ -240,30 +272,24 @@ export class NotificationManager {
     try { return JSON.parse(raw); } catch { return { enabled: true }; }
   }
 
-  /**
-   * Ask the browser to wake the service worker while the tab is closed.
-   * Chromium honours periodicsync; elsewhere this is a no-op and the in-page
-   * interval remains the fallback.
-   */
   async requestBackgroundSync() {
-    if (!this.swRegistration) return false;
+    const reg = await this.getRegistration();
+    if (!reg) return false;
     try {
-      if ('periodicSync' in this.swRegistration) {
+      if ('periodicSync' in reg) {
         let status;
         try {
           status = await navigator.permissions.query({ name: 'periodic-background-sync' });
         } catch {
-          // Unsupported permission name in this browser
           return false;
         }
         if (status && status.state === 'granted') {
-          await this.swRegistration.periodicSync.register('plan-reminders', { minInterval: 15 * 60 * 1000 });
+          await reg.periodicSync.register('plan-reminders', { minInterval: 15 * 60 * 1000 });
           return true;
         }
-        return false;
       }
     } catch (err) {
-      console.warn('Periodic sync unavailable:', err);
+      console.warn('Periodic sync registration error:', err);
     }
     return false;
   }
