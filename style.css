@@ -2,6 +2,15 @@
    TUI Phosphor Green Todo CSS
    ========================================================================== */
 
+@font-face {
+  font-family: "Samaano";
+  src: url("fonts/Samaano-VF.ttf") format("truetype-variations"),
+       url("fonts/Samaano-VF.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root,
 [data-theme="tui"] {
   --body-bg: #080d09;
@@ -32,7 +41,7 @@
   --tui-glow: 0 0 8px rgba(0, 255, 102, 0.45);
   --tui-border-active: #00ff66;
   --tui-dim: #00732e;
-  --tui-font: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+  --tui-font: "Samaano", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, monospace;
   --tui-bar-height: 28px;
 }
 
