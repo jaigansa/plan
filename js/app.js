@@ -37,6 +37,7 @@ class KanbanApp {
       this.theme.applyTheme();
       this.renderBoard();
       this.renderBoardSwitcher();
+      this.notifications.updateCountdownUI();
     });
   }
 
@@ -363,6 +364,9 @@ class KanbanApp {
     });
 
     this.renderBoardSwitcher();
+    if (this.notifications) {
+      this.notifications.updateCountdownUI();
+    }
 
     if (window.lucide) {
       window.lucide.createIcons();

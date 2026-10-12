@@ -137,6 +137,47 @@
     };
   }
 
+  /**
+   * Calculate the earliest upcoming reminder timestamp and card info.
+   * Returns { nextDueAt, msUntil, cardId, title, priority, listName } or null if none scheduled today.
+   */
+  function getNextDueReminder(data, now) {
+    const at = typeof now === 'number' ? now : Date.now();
+    if (!data || !data.cards || !data.lists) return null;
+
+    const todayCode = getTodayCode(at);
+    const cardListMap = buildCardListMap(data);
+    let nextItem = null;
+
+    Object.keys(data.cards).forEach((cardId) => {
+      const card = data.cards[cardId];
+      if (!card || card.completed) return;
+
+      const intervalMs = PRIORITY_INTERVALS[card.priority];
+      if (!intervalMs) return;
+
+      const assignedDays = Array.isArray(card.days) && card.days.length ? card.days : ALL_DAYS;
+      if (assignedDays.indexOf(todayCode) === -1) return;
+
+      const lastNotified = card.lastNotifiedAt || 0;
+      let nextDueAt = lastNotified ? (lastNotified + intervalMs) : at;
+      if (nextDueAt < at) nextDueAt = at; // due right now
+
+      if (!nextItem || nextDueAt < nextItem.nextDueAt) {
+        nextItem = {
+          cardId: card.id || cardId,
+          title: card.title || 'Untitled',
+          priority: card.priority,
+          listName: cardListMap[cardId] || 'Todo',
+          nextDueAt: nextDueAt,
+          msUntil: Math.max(0, nextDueAt - at)
+        };
+      }
+    });
+
+    return nextItem;
+  }
+
   root.PlanReminderCore = {
     DAY_CODES: DAY_CODES,
     DAY_INFO: DAY_INFO,
@@ -146,6 +187,7 @@
     isValidPriority: isValidPriority,
     buildCardListMap: buildCardListMap,
     computeDueReminders: computeDueReminders,
+    getNextDueReminder: getNextDueReminder,
     markNotified: markNotified,
     describe: describe
   };

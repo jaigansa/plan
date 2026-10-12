@@ -196,15 +196,22 @@ export class NotificationManager {
 
   startScheduler() {
     this.stopScheduler();
+    this.updateCountdownUI();
+
     if (!this.isEnabled()) return;
 
     // Check immediately on startup
     this.checkAndNotify();
 
-    // Check periodically every 30 seconds while tab/app is open
+    // Check periodically every 15 seconds while tab/app is open
     this.timerId = setInterval(() => {
       this.checkAndNotify();
-    }, 30000);
+    }, 15000);
+
+    // Update countdown ticker every 1 second
+    this.countdownTimerId = setInterval(() => {
+      this.updateCountdownUI();
+    }, 1000);
 
     // Keep service worker mirror up to date
     this.syncMirror();
@@ -214,6 +221,7 @@ export class NotificationManager {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           this.checkAndNotify();
+          this.updateCountdownUI();
           this.syncMirror();
         }
       });
@@ -224,6 +232,60 @@ export class NotificationManager {
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
+    }
+    if (this.countdownTimerId) {
+      clearInterval(this.countdownTimerId);
+      this.countdownTimerId = null;
+    }
+    this.updateCountdownUI();
+  }
+
+  updateCountdownUI() {
+    const badge = document.getElementById('header-notif-countdown');
+    const timerText = document.getElementById('countdown-timer-text');
+    if (!badge || !timerText) return;
+
+    if (!this.isEnabled() || !this.isSupported() || this.getPermission() !== 'granted' || !Core) {
+      badge.classList.add('hidden');
+      return;
+    }
+
+    const data = this.app.storage ? this.app.storage.getData() : null;
+    if (!data) {
+      badge.classList.add('hidden');
+      return;
+    }
+
+    const now = Date.now();
+    const nextItem = Core.getNextDueReminder(data, now);
+    if (!nextItem) {
+      badge.classList.add('hidden');
+      return;
+    }
+
+    badge.classList.remove('hidden');
+
+    const msLeft = Math.max(0, nextItem.nextDueAt - now);
+    const totalSecs = Math.floor(msLeft / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+
+    let timeFormatted = '';
+    if (mins >= 60) {
+      const hours = Math.floor(mins / 60);
+      const remainMins = mins % 60;
+      timeFormatted = `${hours}h ${remainMins}m`;
+    } else {
+      timeFormatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    timerText.textContent = timeFormatted;
+    badge.title = `Next reminder for "${nextItem.title}" in ${timeFormatted}`;
+
+    if (msLeft <= 60000) {
+      badge.classList.add('urgent');
+    } else {
+      badge.classList.remove('urgent');
     }
   }
 

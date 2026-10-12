@@ -322,6 +322,51 @@ body {
   color: var(--text-secondary);
 }
 
+/* Header Notification Countdown Badge */
+.header-countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 255, 102, 0.08);
+  border: 1px solid rgba(0, 255, 102, 0.35);
+  color: var(--accent-color);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+  transition: all 0.15s ease;
+}
+
+[data-theme^="tui"] .header-countdown-badge {
+  border-radius: 0;
+}
+
+.header-countdown-badge svg,
+.header-countdown-badge i {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.header-countdown-badge.urgent {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #ef4444;
+}
+
+.header-countdown-badge.urgent svg,
+.header-countdown-badge.urgent i {
+  color: #ef4444;
+}
+
+.header-countdown-badge.hidden {
+  display: none !important;
+}
+
 
 .icon-btn {
   background: var(--btn-bg);
