@@ -15,64 +15,12 @@ export function escapeHtml(str) {
   }[m]));
 }
 
-export function sanitizeUrl(url) {
-  if (!url) return '';
-  const clean = url.trim();
-  if (/^(https?:\/\/|data:image\/)/i.test(clean)) return clean;
-  return '';
-}
-
 export const PRIORITIES = {
   urgent: { key: 'urgent', name: 'Urgent', color: '#ef4444', rank: 4 },
   high:   { key: 'high',   name: 'High',   color: '#f97316', rank: 3 },
   medium: { key: 'medium', name: 'Medium', color: '#eab308', rank: 2 },
   low:    { key: 'low',    name: 'Low',    color: '#10b981', rank: 1 }
 };
-
-export function getDueStatus(dueDateStr) {
-  if (!dueDateStr) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dueDateStr);
-  target.setHours(0, 0, 0, 0);
-  const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    const days = Math.abs(diffDays);
-    return {
-      cls: 'overdue',
-      diffDays,
-      icon: 'alert-triangle',
-      badgeText: `Overdue (${days}d)`,
-      modalText: `Overdue by ${days} day${days > 1 ? 's' : ''}`
-    };
-  }
-  if (diffDays === 0) {
-    return {
-      cls: 'today',
-      diffDays,
-      icon: 'clock',
-      badgeText: 'Due Today',
-      modalText: 'Due Today!'
-    };
-  }
-  if (diffDays === 1) {
-    return {
-      cls: 'tomorrow',
-      diffDays,
-      icon: 'hourglass',
-      badgeText: 'Tomorrow',
-      modalText: 'Due Tomorrow'
-    };
-  }
-  return {
-    cls: 'upcoming',
-    diffDays,
-    icon: 'calendar',
-    badgeText: dueDateStr,
-    modalText: `Due in ${diffDays} days`
-  };
-}
 
 export class ModalHelper {
   static open(modalEl, onOpen) {
@@ -95,16 +43,6 @@ export class ModalHelper {
       document.body.classList.remove('modal-open');
     }
     if (onClose) onClose();
-  }
-
-  static closeTopModal() {
-    const openModals = document.querySelectorAll('.modal-overlay:not(.hidden)');
-    if (openModals.length > 0) {
-      const topModal = openModals[openModals.length - 1];
-      ModalHelper.close(topModal);
-      return true;
-    }
-    return false;
   }
 
   static bind(modalEl, openTrigger, closeTrigger, onOpen) {

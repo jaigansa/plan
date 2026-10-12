@@ -8,53 +8,16 @@
 const BOARDS_STORE_KEY = 'kanban_boards_v2';
 const ACTIVE_BOARD_KEY = 'kanban_active_board_v2';
 
-export function isDefaultStarterBoard(board) {
-  if (!board) return false;
-  if (board.isDefault === true) return true;
-  const cards = board.cards || {};
-  const keys = Object.keys(cards);
-  if (keys.length === 0 && (!board.archivedCards || board.archivedCards.length === 0)) {
-    return true;
-  }
-  if (keys.length === 1 && cards['card-1'] && (!board.archivedCards || board.archivedCards.length === 0)) {
-    return true;
-  }
-  if (cards['card-1'] && cards['card-truck']) {
-    return true;
-  }
-  return false;
-}
-
 export const createDefaultBoard = (id = 'board-1', title = 'My Project Board') => ({
   id,
   title,
   theme: 'dark',
   isDefault: true,
   lists: [
-    {
-      id: 'list-todo',
-      title: 'Plan',
-      color: '#3b82f6',
-      cardIds: []
-    },
-    {
-      id: 'list-in-progress',
-      title: 'Progress',
-      color: '#eab308',
-      cardIds: []
-    },
-    {
-      id: 'list-done',
-      title: 'Done',
-      color: '#10b981',
-      cardIds: []
-    },
-    {
-      id: 'list-drop',
-      title: 'Drop',
-      color: '#64748b',
-      cardIds: []
-    }
+    { id: 'list-todo', title: 'Plan', color: '#3b82f6', cardIds: [] },
+    { id: 'list-in-progress', title: 'Progress', color: '#eab308', cardIds: [] },
+    { id: 'list-done', title: 'Done', color: '#10b981', cardIds: [] },
+    { id: 'list-drop', title: 'Drop', color: '#64748b', cardIds: [] }
   ],
   cards: {},
   archivedCards: [],
@@ -74,16 +37,7 @@ export class StorageManager {
 
     this.data = this.boards[this.activeBoardId];
 
-    // Undo / Redo History Stacks
-    this.undoStack = [];
-    this.redoStack = [];
-    this.maxHistory = 30;
-
-    this.syncStatusListeners = [];
-
-    // If localStorage was cleared but IndexedDB still has snapshots, put them
-    // back. If there is nothing to restore, this is also where the in-memory
-    // default board gets written for the first time.
+    // If localStorage was cleared but IndexedDB still has snapshots, restore them
     this.reconcileFromBackup().then((restored) => {
       if (restored) {
         this.boards = this.loadAllBoards();
@@ -98,21 +52,10 @@ export class StorageManager {
       this.backupNow();
     });
 
-    // Best-effort final snapshot when the tab goes away.
+    // Best-effort snapshot when tab goes away
     window.addEventListener('pagehide', () => { this.flushBackup(); });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') this.flushBackup();
-    });
-  }
-
-  onSyncStatusChange(cb) {
-    this.syncStatusListeners.push(cb);
-  }
-
-  notifyStatus(status) {
-    this._lastStatus = status;
-    this.syncStatusListeners.forEach(fn => {
-      try { fn(status); } catch (e) { /* no-op */ }
     });
   }
 
@@ -269,49 +212,9 @@ export class StorageManager {
     return this.backupNow();
   }
 
-  // --- Undo / Redo ---
-  recordHistory() {
-    // Push deep copy of current board state before mutating
-    this.undoStack.push(JSON.stringify(this.data));
-    if (this.undoStack.length > this.maxHistory) {
-      this.undoStack.shift();
-    }
-    // Any new action clears the redo stack
-    this.redoStack = [];
-  }
-
-  canUndo() {
-    return this.undoStack.length > 0;
-  }
-
-  canRedo() {
-    return this.redoStack.length > 0;
-  }
-
-  undo() {
-    if (!this.canUndo()) return false;
-    this.redoStack.push(JSON.stringify(this.data));
-    const previous = JSON.parse(this.undoStack.pop());
-    this.data = previous;
-    this.saveAllBoards();
-    return true;
-  }
-
-  redo() {
-    if (!this.canRedo()) return false;
-    this.undoStack.push(JSON.stringify(this.data));
-    const next = JSON.parse(this.redoStack.pop());
-    this.data = next;
-    this.saveAllBoards();
-    return true;
-  }
-
-  saveLocal(data, record = true) {
-    if (record) {
-      this.recordHistory();
-      if (data && data.isDefault) {
-        delete data.isDefault;
-      }
+  saveLocal(data) {
+    if (data && data.isDefault) {
+      delete data.isDefault;
     }
     this.data = data;
     this.saveAllBoards();
@@ -399,8 +302,6 @@ export class StorageManager {
     if (this.boards[boardId]) {
       this.activeBoardId = boardId;
       this.data = this.boards[boardId];
-      this.undoStack = [];
-      this.redoStack = [];
       this.saveAllBoards();
       return true;
     }
@@ -435,8 +336,6 @@ export class StorageManager {
     delete this.boards[toDeleteId];
     this.activeBoardId = Object.keys(this.boards)[0];
     this.data = this.boards[this.activeBoardId];
-    this.undoStack = [];
-    this.redoStack = [];
     this.saveAllBoards();
     return true;
   }
