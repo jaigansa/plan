@@ -131,11 +131,9 @@
 
   /** Build the title/body shown in the notification. */
   function describe(due) {
-    const label = (due.priority || '').toUpperCase();
-    const intervalMins = Math.round(due.intervalMs / 60000);
     return {
-      title: '[' + label + '] ' + due.title,
-      body: 'List: "' + due.listName + '" · Reminding every ' + intervalMins + 'm on ' + due.todayCode
+      title: due.title || 'Untitled',
+      body: 'List: "' + (due.listName || 'Todo') + '"'
     };
   }
 

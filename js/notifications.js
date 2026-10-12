@@ -189,7 +189,7 @@ export class NotificationManager {
     }
 
     return this.sendNotification('plan Test Notification', {
-      body: 'Notifications are working! You will receive priority alerts on your assigned days.',
+      body: 'Notifications are working cleanly!',
       tag: 'plan-test-alert'
     });
   }
