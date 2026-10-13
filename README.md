@@ -10,7 +10,7 @@ Optimized specifically for phone screens and mobile web browsers with tap-based 
 
 - **Mobile-First TUI Architecture**:
   - Full-width, vertically stacked list columns optimized for single-thumb mobile usage.
-  - Authentic Phosphor Green Terminal aesthetic with JetBrains Mono typography.
+  - Authentic Phosphor Green Terminal aesthetic with Google Sans typography.
 
 - **Full-Screen 3-Dot Action Menu**:
   - Tap `⋮` on any todo to open a dedicated full-screen options view.

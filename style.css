@@ -2,11 +2,43 @@
    TUI Phosphor Green Todo CSS
    ========================================================================== */
 
+/* Google Sans Fonts (Self-Hosted Locally) */
 @font-face {
-  font-family: "Samaano";
-  src: url("fonts/Samaano-VF.ttf") format("truetype-variations"),
-       url("fonts/Samaano-VF.ttf") format("truetype");
-  font-weight: 100 900;
+  font-family: 'Google Sans';
+  src: url('fonts/GoogleSans-Variable.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  src: url('fonts/GoogleSansFlex.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans Text';
+  src: url('fonts/GoogleSansText-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans Text';
+  src: url('fonts/GoogleSansText-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans Text';
+  src: url('fonts/GoogleSansText-Bold.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -41,7 +73,7 @@
   --tui-glow: 0 0 8px rgba(0, 255, 102, 0.45);
   --tui-border-active: #00ff66;
   --tui-dim: #00732e;
-  --tui-font: "Samaano", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, monospace;
+  --tui-font: "Google Sans", "Google Sans Flex", "Google Sans Text", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, monospace, sans-serif;
   --tui-bar-height: 28px;
 }
 
